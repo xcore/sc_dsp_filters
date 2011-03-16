@@ -29,7 +29,7 @@ int biquadCascade(biquadState &state, int xn) {
     for(int j=0; j<BANKS; j++) {
         ynl = (1<<23);        // 0.5, for rounding, could be triangular noise
         ynh = 0;
-        {ynh, ynl} = macs( biquads[state.db[j]][j].a1, state.xn1[j+1], 0, 0);
+        {ynh, ynl} = macs( biquads[state.db[j]][j].a1, state.xn1[j+1], ynh, ynl);
         {ynh, ynl} = macs( biquads[state.db[j]][j].a2, state.xn2[j+1], ynh, ynl);
         {ynh, ynl} = macs( biquads[state.db[j]][j].b0, xn, ynh, ynl);
         {ynh, ynl} = macs( biquads[state.db[j]][j].b1, state.xn1[j], ynh, ynl);
