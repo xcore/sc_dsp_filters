@@ -1,0 +1,21 @@
+// Copyright (c) 2011, XMOS Ltd, All rights reserved
+// This software is freely distributable under a derivative of the
+// University of Illinois/NCSA Open Source License posted in
+// LICENSE.txt and at <http://github.xcore.com/>
+
+//Generated code - do not edit.
+
+#define BANKS 2
+#define DBS 11
+extern struct coeff {int a1, a2, b0, b1, b2;} biquads[DBS][BANKS];
+
+typedef struct {
+    int xn1[BANKS+1], xn2[BANKS+1];
+    int db[BANKS];
+    int desiredDb[BANKS];
+    int adjustCounter;
+    int adjustDelay;
+} biquadState;
+
+extern void initBiquads(biquadState &state, int zeroDb);
+extern int biquadCascade(biquadState &state, int sample);
