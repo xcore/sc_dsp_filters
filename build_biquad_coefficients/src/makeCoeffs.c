@@ -86,7 +86,7 @@ void highShelf(double f0, double dbGain) {
     printout( a0, a1, a2, b0, b1, b2);
 }
 
-usage() {
+void usage() {
     fprintf(stderr,
             " -low freq            Low shelf filter, with given corner freq\n"
             " -high freq           High shelf filter, with given corner freq\n"
@@ -114,6 +114,7 @@ FILE *fopen_save(char *x) {
         fprintf(stderr, "Cannot open %s for writing\n", x);
         exit(1);
     }
+    return fd;
 }
 
 enum {LOW, HIGH, PEAKING};
