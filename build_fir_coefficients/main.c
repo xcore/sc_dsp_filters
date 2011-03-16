@@ -47,11 +47,21 @@ double sinc(double x, double fc) {
 }
 
 double lp(double fc, window w, int n, int N) {
-    double wi = windowValue(w, n, N);
     double s = sinc(n-(N>>1), fc);
-    if (N * fc < 4) {
-        printf("Expected taps to be at least %d\n", ((int) (4/fc))|1);
+    double wi;
+    if (w >= 10) {
+        if (n >= N) {
+            wi = 1;
+        } else {
+            wi = 1-windowValue(w-10, n, N);
+        }
+        wi = 1;
+    } else {
+        wi = windowValue(w, n, N);
     }
+//    if (N * fc < 4) {
+//        printf("Expected taps to be at least %d\n", ((int) (4/fc))|1);
+//    }
     return s*wi;
 }
 
@@ -161,7 +171,7 @@ int main(int argc, char *argv[]) {
     int win = HAMMING;
     int type = 0;
     int N = 0;
-
+    double sum = 0, x;
     FILE *fdXC, *fdCSV;
     double freq = 0, freqh = 0;
 
@@ -226,6 +236,36 @@ int main(int argc, char *argv[]) {
             c[i] = bs(freq, freqh, win, i, N);
             break;
         }
+    }
+
+    sum = 0;
+    for( i = -800; i < 800+N; i++) {
+        switch(type) {
+        case LOW:
+            x = lp(freq, win+10, i, N);
+            break;
+        case HIGH:
+            x = hp(freqh, win+10, i, N);
+            break;
+        case BP:
+            x = bp(freq, freqh, win+10, i, N);
+            break;
+        case BS:
+            x = bs(freq, freqh, win+10, i, N);
+            break;
+        }
+        if (i > N || i < 0) {
+            sum += sqr(x);
+//            printf("%f    0\n", x);
+        } else {
+            sum += sqr(x - c[i]);
+//            printf("%f    %f\n", x, c[i]);
+        }
+    }
+    sum = sqrt(sum);
+    printf("Error: %5.2f%%\n", sum*100);
+    if (sum > 0.10) {
+        printf("    More taps?\n");
     }
 
     fprintf(fdXC,
