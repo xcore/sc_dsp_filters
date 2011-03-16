@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <print.h>
 #include "fir.h"
 
 int coeffs[3] = {
@@ -9,7 +10,7 @@ int coeffs[3] = {
 
 int state[3];
 
-main() {
+int main() {
     int i = 0x01000000;
     printintln(fir(0, coeffs, state,3));
     printintln(fir(0, coeffs, state,3));
@@ -18,5 +19,5 @@ main() {
     printintln(fir(i, coeffs, state,3));
     printintln(fir(i, coeffs, state,3));
     printintln(fir(i, coeffs, state,3));
-    printintln(fir(i, coeffs, state,3));
+    return 0;
 }

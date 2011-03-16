@@ -15,12 +15,12 @@ Key Features
 
 * Generic cascaded biquad filter
 * Generator for filter values
+* Generic FIR
 
 To Do
 =====
 
 * Optimised biquad
-* FIR
 * Optimised FIR
 * On-the-fly computation of coefficients
 * Saturate results
@@ -35,10 +35,14 @@ implement, for example, an audio equaliser. It comes with a program that
 generates biquad coefficients and a response curve. Coefficients and
 response curves are computed based on algorithms by Robert Bristow-Johnson.
 
+The current versions are written for readability - less readable versions
+to follow.
+
 Known Issues
 ============
 
-* Makefile should invoke biquad generator properly - currently relies on gcc.
+* Makefile should invoke biquad generator properly - currently relies on
+  gcc, and currently recreates files unnecessarily.
 
 Required Repositories
 ================

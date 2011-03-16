@@ -24,8 +24,6 @@ XCC_FLAGS = -O2
 
 USED_MODULES = module_cascading_biquad
 
-VERBOSE=1
-
 #=============================================================================
 # The following part of the Makefile includes the common build infrastructure
 # for compiling XMOS applications. You should not need to edit below here.
