@@ -22,7 +22,9 @@ To Do
 * Optimised biquad
 * FIR
 * Optimised FIR
-* on-the-fly computation of coefficients
+* On-the-fly computation of coefficients
+* Saturate results
+* Optional dithering
 
 Firmware Overview
 =================
