@@ -51,9 +51,11 @@ Calling FIR
 The function that performs the run time fir is in module_fir. Inlcude the
 file fir.h and call::
 
-  fir(sampleValue, coefficientTable, stateTable, N)
+  filteredSample = fir(sampleValue, coefficientTable, stateTable, N)
 
-sampleValue should be a 8.24 fixed point number, coefficientTable is wha
+sampleValue should be a 8.24 fixed point number, and the function returns
+the filtered 8.24 value. CoefficientTable is the name of the array that
 was produced by the code above, stateTable should be an array of N integers
 which is initialised to all zeroes prior to the first call to fir, and N is
-the number of taps (the -n parameter above).
+the number of taps (the -n parameter above). The stateTable will contain
+N old samples.
