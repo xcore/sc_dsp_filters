@@ -19,7 +19,15 @@ int fir(int xn, int coeffs[], int state[], int ELEMENTS) {
         state[j] = state[j+1];
     }
     {ynh, ynl} = macs(coeffs[ELEMENTS-1], xn, ynh, ynl);
-    ynh = (ynh << 8) | (((unsigned) ynl) >> 24);
+
+    if (sext(ynh,24) == ynh) {
+        ynh = (ynh << 8) | (((unsigned) ynl) >> 24);
+    } else if (ynh < 0) {
+        ynh = 0x80000000;
+    } else {
+        ynh = 0x7fffffff;
+    }
+
     return ynh;
 }
 

@@ -1,7 +1,13 @@
 Using Biquad filters
 ....................
 
-TO use a Biquad filter you need to (1) compute a set of Biquad coefficients and
+The biquad library provides a cascade of biquad filters, each performing a
+specific filter operation. A typical use is to get one filter to perform a
+low shelf (bass boost), one filter to perform a high shelf gain (treble
+boost) and a number of filters to boost specific bands. Put in series, this
+implements a graphics equaliser.
+
+To use a Biquad filter you need to (1) compute a set of Biquad coefficients and
 (2) insert these coefficients in the source code and call the Biquad function
 to perform a Biquad.
 
@@ -17,7 +23,7 @@ Option               Effect
 ==================== ===================================================================
 -low freq            Low shelf filter, with given corner freq
 -high freq           High shelf filter, with given corner freq
--peaking freq bw     PeakingEQ filter, with given corner freq and bandwiwdth in octaves
+-peaking freq bw     PeakingEQ filter, with given corner freq and bandwidth in octaves
 -min minDb           minimal dB value, default -20
 -max maxDb           maximal dB value, default +20
 -step dbStep         dBs between each step, default 1
@@ -28,7 +34,7 @@ Option               Effect
 ==================== ===================================================================
 
 
-At least one of -low, -high, -bp, or -bs must be specified, it builds a set
+At least one of -low, -high, -bp, or -bs must be specified. The program builds a set
 of biquad coefficients for each filter. For each biquad it generates a
 table for each dB gain level, from min to max in the given number of steps.
 Example calls are::
@@ -42,8 +48,8 @@ table, and a CSV file that contains the response curves.
 Calling Biquad
 --------------
 
-The function that performs the run time fir is in module_cascading_biquad. Inlcude the
-file fir.h and call::
+The function that performs the run time fir is in module_cascading_biquad. Include the
+generated include file and call::
 
   filteredSample = biquadCascade(state, sampleValue);
 
@@ -58,11 +64,12 @@ setting (from -20 db in steps of 1 db), or (-min/steps) in the general
 case.
 
 When biqaudCascade is called the sample is subjected to each biquad in
-turn. Initially each biqaud is set to a 0 dB gain (ie, no change). Between
-calls to biquadCascade you are free to change the desiredDb array in the
+turn. Initially each biquad filter is set to a 0 dB gain (ie, no change). Between
+calls to biquadCascade, the code can change the desiredDb array in the
 state variable. This array holds the gain for each biquad, expressed as an
 array index: 0 is the minimal gain, and (max-min)/steps is the maximal
 gain. Ie, if you have a low-shelf, three peakingEq and a high-shelf biquad,
 then the desiredDb array has five elements referring to the filters that
 were specified on the command line. The biquadCascade function will slowly
-adjust the gain level of each filter, enabling a click-free transition.
+adjust the gain level of each filter to match the desiredDb, enabling a
+click-free transition.

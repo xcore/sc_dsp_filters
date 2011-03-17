@@ -34,7 +34,13 @@ int biquadCascade(biquadState &state, int xn) {
         {ynh, ynl} = macs( biquads[state.db[j]][j].b0, xn, ynh, ynl);
         {ynh, ynl} = macs( biquads[state.db[j]][j].b1, state.xn1[j], ynh, ynl);
         {ynh, ynl} = macs( biquads[state.db[j]][j].b2, state.xn2[j], ynh, ynl);
-        ynh = (ynh << 8) | (((unsigned) ynl) >> 24);
+        if (sext(ynh,24) == ynh) {
+            ynh = (ynh << 8) | (((unsigned) ynl) >> 24);
+        } else if (ynh < 0) {
+            ynh = 0x80000000;
+        } else {
+            ynh = 0x7fffffff;
+        }
         if (j == BANKS-1) {
             state.xn2[j+1] = state.xn1[j+1];
             state.xn1[j+1] = ynh;

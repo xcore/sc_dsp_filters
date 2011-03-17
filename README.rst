@@ -23,20 +23,23 @@ To Do
 * Optimised biquad
 * Optimised FIR
 * On-the-fly computation of coefficients
-* Saturate results
 * Optional dithering
 
 Firmware Overview
 =================
 
 This repo intends to store a set of algorithms to perform standard DSP
-functions. At present, only a cascaded biquad is implemented that can
-implement, for example, an audio equaliser. It comes with a program that
-generates biquad coefficients and a response curve. Coefficients and
-response curves are computed based on algorithms by Robert Bristow-Johnson.
+functions, enabling people to implement, for example, graphic equalisers or
+sample rate converters. At present, only a cascaded biquad and a FIR filter
+are implemented, together with programs to compute coefficients and
+response curves. Coefficients and
+response curves for the biquad are computed based on algorithms by Robert
+Bristow-Johnson. 
 
-The current versions are written for readability - less readable versions
-to follow.
+The current FIR and Biquad code are written for readability - less readable
+(more efficient) versions to follow. The generic versions check on overflow
+and saturate (intermediate) results.
+
 
 Known Issues
 ============
@@ -52,4 +55,5 @@ Required Repositories
 Support
 =======
 
-Issues may be submitted via the Issues tab in this github repo. Response to any issues submitted as at the discretion of the maintainer for this line.
+Issues may be submitted via the Issues tab in this github repo. Response to
+any issues submitted as at the discretion of the maintainer for this line.

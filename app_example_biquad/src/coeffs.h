@@ -1,12 +1,7 @@
-// Copyright (c) 2011, XMOS Ltd, All rights reserved
-// This software is freely distributable under a derivative of the
-// University of Illinois/NCSA Open Source License posted in
-// LICENSE.txt and at <http://github.xcore.com/>
-
 //Generated code - do not edit.
 
 #define BANKS 2
-#define DBS 11
+#define DBS 41
 extern struct coeff {int a1, a2, b0, b1, b2;} biquads[DBS][BANKS];
 
 typedef struct {

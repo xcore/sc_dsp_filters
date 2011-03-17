@@ -118,15 +118,15 @@ int sin(int x) {
 int main(void) {
     biquadState bs;
     initBiquads(bs, 20);
-    for(int i = 0; i < 200; i++) {       // 0.2 seconds
+    for(int i = 0; i < 2000; i++) {       // 0.2 seconds
         int v100 = sin(i*2048/480);
         int v1000 = sin(i*2048/48);
         int v10000 = sin(i*1280/3);
-        int v = (v100 + v1000 + v10000) >> 2;
+        int v = (v100 + v1000 + v10000) << 4;
         int o = biquadCascade(bs, v);
-        if (i == 10) {
-            bs.desiredDb[1] = 0;
-            bs.desiredDb[0] = 0;
+        if (i == 100) {
+            bs.desiredDb[1] = 40;
+            bs.desiredDb[0] = 40;
         }
         printf("%d %d %d\n", i, v, o);
     }
