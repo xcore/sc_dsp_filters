@@ -10,7 +10,7 @@
 
 #define pi M_PI
 
-typedef enum {HANN =1, HAMMING, GAUSSIAN, BLACKMAN} window;
+typedef enum {NOWINDOW, HANN, HAMMING, GAUSSIAN, BLACKMAN} window;
 
 // Window function from http://en.wikipedia.org/wiki/Window_function
 
@@ -33,6 +33,7 @@ double windowValue(window w, int n, int N) {
         double a2 = alpha/2;
         return a0 - a1*cos(2*pi*n/(N-1.0))+a2*cos(4*pi*n/(N-1.0));
     }
+    case NOWINDOW: return 1.0;
     }
     return 1.0;
 }
@@ -49,16 +50,7 @@ double sinc(double x, double fc) {
 double lp(double fc, window w, int n, int N) {
     double s = sinc(n-(N>>1), fc);
     double wi;
-    if (w >= 10) {
-        if (n >= N) {
-            wi = 1;
-        } else {
-            wi = 1-windowValue(w-10, n, N);
-        }
-        wi = 1;
-    } else {
-        wi = windowValue(w, n, N);
-    }
+    wi = windowValue(w, n, N);
 //    if (N * fc < 4) {
 //        printf("Expected taps to be at least %d\n", ((int) (4/fc))|1);
 //    }
@@ -139,12 +131,10 @@ void usage() {
             " -hann                Hann window\n\n"
             " -n taps              Number of taps - should be odd\n"
             " -fs freq             Sample frequency, default 48000\n\n"
-            " -h includeFileName   name of include file, default coeffs.h\n"
             " -xc sourceFileName   name of source file, default coeffs.xc\n"
             " -csv csvFileName     name of csv file, default response.csv\n\n"
             "One of -low, -high, -bp, or -bs must be specified\n"
             "Outputs are\n"
-            " an include file for specific filter banks\n"
             " a source code file that initialises the coefficients table\n"
             " a CSV file that contains the response curves\n"
         );
@@ -171,7 +161,8 @@ int main(int argc, char *argv[]) {
     int win = HAMMING;
     int type = 0;
     int N = 0;
-    double sum = 0, x;
+    double sum = 0, x = 0;
+    double tsum = 0;
     FILE *fdXC, *fdCSV;
     double freq = 0, freqh = 0;
 
@@ -227,7 +218,7 @@ int main(int argc, char *argv[]) {
             c[i] = lp(freq, win, i, N);
             break;
         case HIGH:
-            c[i] = hp(freqh, win, i, N);
+            c[i] = hp(freq, win, i, N);
             break;
         case BP:
             c[i] = bp(freq, freqh, win, i, N);
@@ -239,39 +230,38 @@ int main(int argc, char *argv[]) {
     }
 
     sum = 0;
-    for( i = -800; i < 800+N; i++) {
+    for( i = -80; i < 80+N; i++) {
+        if (i == (N>>1)) continue;
         switch(type) {
         case LOW:
-            x = lp(freq, win+10, i, N);
+            x = lp(freq, NOWINDOW, i, N);
             break;
         case HIGH:
-            x = hp(freqh, win+10, i, N);
+            x = hp(freq, NOWINDOW, i, N);
             break;
         case BP:
-            x = bp(freq, freqh, win+10, i, N);
+            x = bp(freq, freqh, NOWINDOW, i, N);
             break;
         case BS:
-            x = bs(freq, freqh, win+10, i, N);
+            x = bs(freq, freqh, NOWINDOW, i, N);
             break;
         }
         if (i > N || i < 0) {
             sum += sqr(x);
-//            printf("%f    0\n", x);
         } else {
             sum += sqr(x - c[i]);
-//            printf("%f    %f\n", x, c[i]);
         }
+        tsum += sqr(x);
     }
-    sum = sqrt(sum);
+    sum = sqrt(sum)/sqrt(tsum);
     printf("Error: %5.2f%%\n", sum*100);
-    if (sum > 0.10) {
+    if (sum > 0.20) {
         printf("    More taps?\n");
     }
 
     fprintf(fdXC,
             "//Generated code - do not edit.\n\n"
-            "#define TAPS %d\n"
-            "int coeff[TAPS] = {\n", N);
+            "int coeff[%d] = {\n", N);
     for( i = 0; i < N; i++) {
         fprintf(fdXC, " %d, // %10f\n", (int) floor(c[i] * (1<<24) + 0.5), c[i]); 
     }
