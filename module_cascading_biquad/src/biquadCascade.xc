@@ -25,7 +25,6 @@ int biquadCascade(biquadState &state, int xn) {
     unsigned int ynl;
     int ynh;
 
-#pragma loop unroll(5)
     for(int j=0; j<BANKS; j++) {
         ynl = (1<<(FRACTIONALBITS-1));        // 0.5, for rounding, could be triangular noise
         ynh = 0;
@@ -41,15 +40,13 @@ int biquadCascade(biquadState &state, int xn) {
         } else {
             ynh = 0x7fffffff;
         }
-        if (j == BANKS-1) {
-            state.xn2[j+1] = state.xn1[j+1];
-            state.xn1[j+1] = ynh;
-        }
         state.xn2[j] = state.xn1[j];
         state.xn1[j] = xn;
 
         xn = ynh;
     }
+    state.xn2[BANKS] = state.xn1[BANKS];
+    state.xn1[BANKS] = ynh;
     
     if (state.adjustDelay > 0) {
         state.adjustDelay--;
