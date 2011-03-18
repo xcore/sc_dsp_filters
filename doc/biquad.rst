@@ -24,6 +24,7 @@ Option               Effect
 -low freq            Low shelf filter, with given corner freq
 -high freq           High shelf filter, with given corner freq
 -peaking freq bw     PeakingEQ filter, with given corner freq and bandwidth in octaves
+-bits fractionalBits number of fractional bits, default 24
 -min minDb           minimal dB value, default -20
 -max maxDb           maximal dB value, default +20
 -step dbStep         dBs between each step, default 1

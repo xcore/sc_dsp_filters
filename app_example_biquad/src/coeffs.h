@@ -2,6 +2,7 @@
 
 #define BANKS 2
 #define DBS 41
+#define FRACTIONALBITS 27
 extern struct coeff {int a1, a2, b0, b1, b2;} biquads[DBS][BANKS];
 
 typedef struct {

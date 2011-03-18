@@ -27,15 +27,15 @@ int biquadCascade(biquadState &state, int xn) {
 
 #pragma loop unroll(5)
     for(int j=0; j<BANKS; j++) {
-        ynl = (1<<23);        // 0.5, for rounding, could be triangular noise
+        ynl = (1<<(FRACTIONALBITS-1));        // 0.5, for rounding, could be triangular noise
         ynh = 0;
-        {ynh, ynl} = macs( biquads[state.db[j]][j].a1, state.xn1[j+1], ynh, ynl);
-        {ynh, ynl} = macs( biquads[state.db[j]][j].a2, state.xn2[j+1], ynh, ynl);
         {ynh, ynl} = macs( biquads[state.db[j]][j].b0, xn, ynh, ynl);
         {ynh, ynl} = macs( biquads[state.db[j]][j].b1, state.xn1[j], ynh, ynl);
         {ynh, ynl} = macs( biquads[state.db[j]][j].b2, state.xn2[j], ynh, ynl);
-        if (sext(ynh,24) == ynh) {
-            ynh = (ynh << 8) | (((unsigned) ynl) >> 24);
+        {ynh, ynl} = macs( biquads[state.db[j]][j].a1, state.xn1[j+1], ynh, ynl);
+        {ynh, ynl} = macs( biquads[state.db[j]][j].a2, state.xn2[j+1], ynh, ynl);
+        if (sext(ynh,FRACTIONALBITS) == ynh) {
+            ynh = (ynh << (32-FRACTIONALBITS)) | (ynl >> FRACTIONALBITS);
         } else if (ynh < 0) {
             ynh = 0x80000000;
         } else {

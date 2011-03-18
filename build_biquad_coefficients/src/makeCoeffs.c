@@ -8,18 +8,28 @@
 #include <stdlib.h>
 
 #define pi 3.1415926536
+int FRACTIONALBITS = 24;
 
 #define hzCnt 139
 #define maxDbs 200
 
 double gain[maxDbs][hzCnt];
+double igain[maxDbs][hzCnt];
 double freqs[hzCnt];
 int thedb;
 
 FILE *fdH, *fdXC, *fdCSV;
 
+int errorValue = 0;
+
 int R(double x) {
-    return floor((1<<24) * x + 0.5);
+    if (x >= (1<<(31-FRACTIONALBITS)) ||
+        x < -(1<<(31-FRACTIONALBITS))) {
+        fprintf(stderr, "Overflow: constant %f too large, maximum with %d fractional bits is %d\n",
+                x, FRACTIONALBITS, 1<<(31-FRACTIONALBITS));
+        errorValue++;
+    }
+    return floor((1<<FRACTIONALBITS) * x + 0.5);
 }
 
 double Fs = 48000.0;
@@ -32,13 +42,23 @@ void printout(double a0, double a1, double a2, double b0, double b1, double b2) 
     double f;
     int cnt = 0;
 
+    double ra1 = R(a1/a0) / (double) (1<<FRACTIONALBITS);
+    double ra2 = R(a2/a0) / (double) (1<<FRACTIONALBITS);
+    double rb0 = R(b0/a0) / (double) (1<<FRACTIONALBITS);
+    double rb1 = R(b1/a0) / (double) (1<<FRACTIONALBITS);
+    double rb2 = R(b2/a0) / (double) (1<<FRACTIONALBITS);
+    double ra0 = 1;
+
     for(cnt = 0; cnt < hzCnt; cnt++) {
         double w = 2 * pi * freqs[cnt] / Fs;
         double phi = sin(w/2);
         phi = phi * phi;
-        gain[thedb][cnt] +=
+        igain[thedb][cnt] +=
             10*log10( sqr(b0+b1+b2) - 4*(b0*b1 + 4*b0*b2 + b1*b2)*phi + 16*b0*b2*sqr(phi) )
             -10*log10( sqr(a0+a1+a2) - 4*(a0*a1 + 4*a0*a2 + a1*a2)*phi + 16*a0*a2*sqr(phi) );
+        gain[thedb][cnt] +=
+            10*log10( sqr(rb0+rb1+rb2) - 4*(rb0*rb1 + 4*rb0*rb2 + rb1*rb2)*phi + 16*rb0*rb2*sqr(phi) )
+            -10*log10( sqr(ra0+ra1+ra2) - 4*(ra0*ra1 + 4*ra0*ra2 + ra1*ra2)*phi + 16*ra0*ra2*sqr(phi) );
     }
 
     fprintf(fdXC, "    {%10d, %10d, %10d, %10d, %10d},\n", -R(a1/a0), -R(a2/a0), R(b0/a0), R(b1/a0), R(b2/a0));
@@ -91,6 +111,7 @@ void usage() {
             " -low freq            Low shelf filter, with given corner freq\n"
             " -high freq           High shelf filter, with given corner freq\n"
             " -peaking freq bw     PeakingEQ filter, with given corner freq and bw in octaves\n\n"
+            " -bits fractionalBits number of fractional bits, default 24\n"
             " -min minDb           minimal dB value, default -20\n"
             " -max maxDb           maximal dB value, default +20\n"
             " -step dbStep         Dbs between each step, default 1\n"
@@ -151,6 +172,8 @@ int main(int argc, char *argv[]) {
             filterCnt++;
         } else if (strcmp(argv[i], "-fs") == 0) {
             Fs = atof(argv[++i]);
+        } else if (strcmp(argv[i], "-bits") == 0) {
+            FRACTIONALBITS = atoi(argv[++i]);
         } else if (strcmp(argv[i], "-min") == 0) {
             mindb = atof(argv[++i]);
         } else if (strcmp(argv[i], "-max") == 0) {
@@ -168,7 +191,7 @@ int main(int argc, char *argv[]) {
         }
 
     }
-    dbcnt = (maxdb-mindb)/stepdb + 1.5;
+    dbcnt = floor((maxdb-mindb+stepdb/4)/stepdb) + 1;
     if (mindb >= maxdb) {
         fprintf(stderr, "Mindb should be less than maxdb\n");
         exit(1);
@@ -189,8 +212,9 @@ int main(int argc, char *argv[]) {
             "//Generated code - do not edit.\n\n"
             "#define BANKS %d\n"
             "#define DBS %d\n"
+           "#define FRACTIONALBITS %d\n"
             "extern struct coeff {int a1, a2, b0, b1, b2;} biquads[DBS][BANKS];\n\n",
-            filterCnt, dbcnt );
+            filterCnt, dbcnt, FRACTIONALBITS );
 
     fprintf(fdH,
             "typedef struct {\n"
@@ -209,7 +233,7 @@ int main(int argc, char *argv[]) {
             "// First index is the dbLevel, in steps of %f db, first entry is %f db\n"
             "// Second index is the filter number - this filter has %d banks\n"
             "// Each structure instantiation contains the five coefficients for each biquad:\n"
-            "// -a1/a0, -a2/a0, b0/a0, b1/a0, b2/a0; all numbers are stored in 8.24 fixed point\n"
+            "// -a1/a0, -a2/a0, b0/a0, b1/a0, b2/a0; all numbers are stored in 2.30 fixed point\n"
             "#include \"%s\"\n"
             "struct coeff biquads[DBS][BANKS] = {\n", stepdb, mindb, filterCnt, includeFile);
     thedb = 0;
@@ -240,7 +264,10 @@ int main(int argc, char *argv[]) {
         for(j = 0; j<dbcnt; j++) {
             fprintf(fdCSV, "\"%f\",", gain[j][i]);
         }
+        for(j = 0; j<dbcnt; j++) {
+            fprintf(fdCSV, "\"%f\",", gain[j][i] - igain[j][i]);
+        }
         fprintf(fdCSV, "\n");
     }
-    return 0;
+    return errorValue;
 }
