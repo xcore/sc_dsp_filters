@@ -125,7 +125,7 @@ int main(void) {
         int v = (v100 + v1000 + v10000) << 4;
         int o = biquadCascade(bs, v);
         if (i == 100) {
-            bs.desiredDb[1] = 40;
+            bs.desiredDb[1] = 0;
             bs.desiredDb[0] = 40;
         }
         printf("%d %d %d\n", i, v, o);

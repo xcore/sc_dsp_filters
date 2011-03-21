@@ -5,34 +5,40 @@
 
 #include <stdio.h>
 #include <xs1.h>
+#include <print.h>
 #include "coeffs.h"
 
 void initBiquads(biquadState &state, int zeroDb) {
     for(int i = 0; i <= BANKS; i++) {
-        state.xn1[i] = 0;
-        state.xn2[i] = 0;
+        state.b[i].xn1 = 0;
+        state.b[i].xn2 = 0;
     }
     for(int i = 0; i < BANKS; i++) {
-        state.db[i] = zeroDb;
+        state.b[i].db = zeroDb;
         state.desiredDb[i] = zeroDb;
     }
     state.adjustCounter = BANKS;
     state.adjustDelay = 0;
 }
 
+extern int biquadAsm(int xn, biquadState &state);
+
 #pragma unsafe arrays
 int biquadCascade(biquadState &state, int xn) {
     unsigned int ynl;
     int ynh;
 
+#if 1
+    xn = biquadAsm(xn, state);
+#else
     for(int j=0; j<BANKS; j++) {
         ynl = (1<<(FRACTIONALBITS-1));        // 0.5, for rounding, could be triangular noise
         ynh = 0;
-        {ynh, ynl} = macs( biquads[state.db[j]][j].b0, xn, ynh, ynl);
-        {ynh, ynl} = macs( biquads[state.db[j]][j].b1, state.xn1[j], ynh, ynl);
-        {ynh, ynl} = macs( biquads[state.db[j]][j].b2, state.xn2[j], ynh, ynl);
-        {ynh, ynl} = macs( biquads[state.db[j]][j].a1, state.xn1[j+1], ynh, ynl);
-        {ynh, ynl} = macs( biquads[state.db[j]][j].a2, state.xn2[j+1], ynh, ynl);
+        {ynh, ynl} = macs( biquads[state.b[j].db][j].b0, xn, ynh, ynl);
+        {ynh, ynl} = macs( biquads[state.b[j].db][j].b1, state.b[j].xn1, ynh, ynl);
+        {ynh, ynl} = macs( biquads[state.b[j].db][j].b2, state.b[j].xn2, ynh, ynl);
+        {ynh, ynl} = macs( biquads[state.b[j].db][j].a1, state.b[j+1].xn1, ynh, ynl);
+        {ynh, ynl} = macs( biquads[state.b[j].db][j].a2, state.b[j+1].xn2, ynh, ynl);
         if (sext(ynh,FRACTIONALBITS) == ynh) {
             ynh = (ynh << (32-FRACTIONALBITS)) | (ynl >> FRACTIONALBITS);
         } else if (ynh < 0) {
@@ -40,29 +46,29 @@ int biquadCascade(biquadState &state, int xn) {
         } else {
             ynh = 0x7fffffff;
         }
-        state.xn2[j] = state.xn1[j];
-        state.xn1[j] = xn;
+        state.b[j].xn2 = state.b[j].xn1;
+        state.b[j].xn1 = xn;
 
         xn = ynh;
     }
-    state.xn2[BANKS] = state.xn1[BANKS];
-    state.xn1[BANKS] = ynh;
-    
+    state.b[BANKS].xn2 = state.b[BANKS].xn1;
+    state.b[BANKS].xn1 = ynh;
     if (state.adjustDelay > 0) {
         state.adjustDelay--;
     } else {
         state.adjustCounter--;
-        if (state.db[state.adjustCounter] > state.desiredDb[state.adjustCounter]) {
-            state.db[state.adjustCounter]--;
+        if (state.b[state.adjustCounter].db > state.desiredDb[state.adjustCounter]) {
+            state.b[state.adjustCounter].db--;
         }
-        if (state.db[state.adjustCounter] < state.desiredDb[state.adjustCounter]) {
-            state.db[state.adjustCounter]++;
+        if (state.b[state.adjustCounter].db < state.desiredDb[state.adjustCounter]) {
+            state.b[state.adjustCounter].db++;
         }
         if (state.adjustCounter == 0) {
             state.adjustCounter = BANKS;
         }
         state.adjustDelay = 40;
     }
+#endif
     return xn;
 }
 

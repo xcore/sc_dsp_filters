@@ -61,7 +61,10 @@ void printout(double a0, double a1, double a2, double b0, double b1, double b2) 
             -10*log10( sqr(ra0+ra1+ra2) - 4*(ra0*ra1 + 4*ra0*ra2 + ra1*ra2)*phi + 16*ra0*ra2*sqr(phi) );
     }
 
-    fprintf(fdXC, "    {%10d, %10d, %10d, %10d, %10d},\n", -R(a1/a0), -R(a2/a0), R(b0/a0), R(b1/a0), R(b2/a0));
+    fprintf(fdXC, "    {%10d, %10d, %10d, %10d, %10d},\n",
+            R(b0/a0), R(b1/a0), R(b2/a0),
+            -R(a1/a0), -R(a2/a0)
+        );
 }
 
 void peakingEQ(double f0, double dbGain, double BW) {
@@ -213,19 +216,20 @@ int main(int argc, char *argv[]) {
             "#define BANKS %d\n"
             "#define DBS %d\n"
            "#define FRACTIONALBITS %d\n"
-            "extern struct coeff {int a1, a2, b0, b1, b2;} biquads[DBS][BANKS];\n\n",
+            "#ifdef __XC__\n"
+            "extern struct coeff {int b0, b1, b2, a1, a2;} biquads[DBS][BANKS];\n\n",
             filterCnt, dbcnt, FRACTIONALBITS );
 
     fprintf(fdH,
             "typedef struct {\n"
-            "    int xn1[BANKS+1], xn2[BANKS+1];\n"
-            "    int db[BANKS];\n"
-            "    int desiredDb[BANKS];\n"
-            "    int adjustCounter;\n"
+            "    struct {int xn1; int xn2; int db;} b[BANKS+1];\n"
             "    int adjustDelay;\n"
+            "    int adjustCounter;\n"
+            "    int desiredDb[BANKS];\n"
             "} biquadState;\n\n"
             "extern void initBiquads(biquadState &state, int zeroDb);\n"
             "extern int biquadCascade(biquadState &state, int sample);\n"
+            "#endif\n"
         );
 
     fprintf(fdXC,
