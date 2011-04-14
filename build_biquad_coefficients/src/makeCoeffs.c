@@ -10,7 +10,7 @@
 #define pi 3.1415926536
 int FRACTIONALBITS = 24;
 
-#define hzCnt 139
+#define hzCnt 170
 #define maxDbs 200
 
 double gain[maxDbs][hzCnt];
@@ -207,7 +207,7 @@ int main(int argc, char *argv[]) {
     fdXC = fopen_save(sourceFile);
     fdCSV = fopen_save(responseCurve);
 
-    for(i = 0, f = 50; i < hzCnt; i++, f *= 1.0442737824274) {
+    for(i = 0, f = 10; i < hzCnt; i++, f *= 1.0442737824274) {
         freqs[i] = f;
     }
 
