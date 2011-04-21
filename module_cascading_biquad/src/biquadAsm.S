@@ -5,8 +5,8 @@
  //   .cc_top biquadAsm, biquadAsm.func
     
     .globl biquadAsm
-    .globl biquadAsm.nntackwords
-    .linkset biquadAsm.nntackwords,NWORDS
+    .globl biquadAsm.nstackwords
+    .linkset biquadAsm.nstackwords,NWORDS
     
 biquadAsm:
     entsp NWORDS
