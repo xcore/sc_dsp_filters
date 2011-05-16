@@ -1,13 +1,14 @@
 #include "coeffs.h"
 
+#define NWORDS 10
  //   .cc_top biquadAsm, biquadAsm.func
     
     .globl biquadAsm
-    .globl biquadAsm.nntackwords
-    .linkset biquadAsm.nntackwords,10
+    .globl biquadAsm.nstackwords
+    .linkset biquadAsm.nstackwords,NWORDS
     
 biquadAsm:
-    entsp 10
+    entsp NWORDS
     stw   r4, sp[0]
     stw   r5, sp[1]
     stw   r6, sp[2]
@@ -139,6 +140,6 @@ allDone:                          // Now just restore all registers.
     ldw   r8, sp[4]
     ldw   r9, sp[5]
     ldw   r10, sp[6]
-    retsp 10
+    retsp NWORDS
 
 //    .cc_bottom biquadAsm.func
