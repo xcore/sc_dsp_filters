@@ -117,7 +117,7 @@ int sin(int x) {
 
 int main(void) {
     biquadState bs;
-    initBiquads(bs, 12);
+    initBiquads(bs, 20);
     for(int i = 0; i < 2000; i++) {       // 0.2 seconds
         int v100 = sin(i*2048/480);
         int v1000 = sin(i*2048/48);
