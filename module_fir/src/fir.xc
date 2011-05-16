@@ -13,12 +13,12 @@ int fir(int xn, int coeffs[], int state[], int ELEMENTS) {
 
     ynl = (1<<23);        // 0.5, for rounding, could be triangular noise
     ynh = 0;
-    state[ELEMENTS-1] = xn;
-    for(int j=0; j<ELEMENTS-1; j++) {
+    for(int j=ELEMENTS-1; j!=0; j--) {
+        state[j] = state[j-1];
         {ynh, ynl} = macs(coeffs[j], state[j], ynh, ynl);
-        state[j] = state[j+1];
     }
-    {ynh, ynl} = macs(coeffs[ELEMENTS-1], xn, ynh, ynl);
+    state[0] = xn;
+    {ynh, ynl} = macs(coeffs[0], xn, ynh, ynl);
 
     if (sext(ynh,24) == ynh) {
         ynh = (ynh << 8) | (((unsigned) ynl) >> 24);

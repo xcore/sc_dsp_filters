@@ -8,25 +8,17 @@
 #include "fir.h"
 
 int coeffs[3] = {
-    0x00400000, //0.25
-    0x00800000, //0.5
-    0x00400000, //0.25
+    0x01000000, //1
+    0x02000000, //2
+    0x03000000, //3
 };
 
 int state[3];
 
 int main() {
-    int i = 0x08000000;
     printintln(fir(0, coeffs, state,3));
-    printintln(fir(i, coeffs, state,3));
-    printintln(fir(i, coeffs, state,3));
-    printintln(fir(i, coeffs, state,3));
-    printintln(fir(i, coeffs, state,3));
-    printintln(fir(i, coeffs, state,3));
-    printintln(fir(-i, coeffs, state,3));
-    printintln(fir(-i, coeffs, state,3));
-    printintln(fir(-i, coeffs, state,3));
-    printintln(fir(-i, coeffs, state,3));
-    printintln(fir(-i, coeffs, state,3));
+    printintln(fir(1, coeffs, state,3));
+    printintln(fir(2, coeffs, state,3));
+    printintln(fir(3, coeffs, state,3));
     return 0;
 }
