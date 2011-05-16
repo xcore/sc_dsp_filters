@@ -10,12 +10,12 @@
 #define pi 3.1415926536
 int FRACTIONALBITS = 24;
 
-#define hzCnt 170
-#define maxDbs 200
+#define hzCnt  42
+#define maxDbs 41
 
-double gain[maxDbs][hzCnt];
-double igain[maxDbs][hzCnt];
-double freqs[hzCnt];
+float gain[maxDbs][hzCnt];
+float igain[maxDbs][hzCnt];
+float freqs[hzCnt];
 int thedb;
 
 FILE *fdH, *fdXC, *fdCSV;
@@ -39,7 +39,6 @@ double sqr(double x) {
 }
 
 void printout(double a0, double a1, double a2, double b0, double b1, double b2) {
-    double f;
     int cnt = 0;
 
     double ra1 = R(a1/a0) / (double) (1<<FRACTIONALBITS);
@@ -70,12 +69,14 @@ void printout(double a0, double a1, double a2, double b0, double b1, double b2) 
 void peakingEQ(double f0, double dbGain, double BW) {
     double A = pow(10.0, dbGain / 40.0);
     double w0 = 2 * pi * f0  /Fs;
-    double alpha = sin(w0) * sinh(log(2.0)/2.0 * BW * w0/sin(w0));
+    double cosw0 = cos(w0);
+    double sinw0 = sin(w0);
+    double alpha = sinw0 * sinh(log(2.0)/2.0 * BW * w0/sinw0);
     double b0 = 1 + alpha * A;
-    double b1 = -2 * cos(w0);
+    double b1 = -2 * cosw0;
     double b2 = 1 - alpha * A;
     double a0 = 1 + alpha / A;
-    double a1 = -2 * cos(w0);
+    double a1 = -2 * cosw0;
     double a2 = 1 - alpha / A;
     printout( a0, a1, a2, b0, b1, b2);
 }
@@ -84,28 +85,32 @@ void lowShelf(double fin, double dbGain) {
     double f0 = fin;
     double A = pow(10.0, dbGain / 40.0);
     double w0 = 2 * pi * f0  /Fs;
+    double cosw0 = cos(w0);
+    double sqrtA = sqrt(A);
     double S = 1;
     double alpha = sin(w0)/2*sqrt((A+1/A)*(1/S-1)+2);
-    double b0 =   A*((A+1)-(A-1)*cos(w0) + 2*sqrt(A)*alpha);
-    double b1 = 2*A*((A-1)-(A+1)*cos(w0)                  );
-    double b2 =   A*((A+1)-(A-1)*cos(w0) - 2*sqrt(A)*alpha);
-    double a0 =     ((A+1)+(A-1)*cos(w0) + 2*sqrt(A)*alpha);
-    double a1 =-2*  ((A-1)+(A+1)*cos(w0)                  );
-    double a2 =     ((A+1)+(A-1)*cos(w0) - 2*sqrt(A)*alpha);
+    double b0 =   A*((A+1)-(A-1)*cosw0 + 2*sqrtA*alpha);
+    double b1 = 2*A*((A-1)-(A+1)*cosw0                );
+    double b2 =   A*((A+1)-(A-1)*cosw0 - 2*sqrtA*alpha);
+    double a0 =     ((A+1)+(A-1)*cosw0 + 2*sqrtA*alpha);
+    double a1 =-2*  ((A-1)+(A+1)*cosw0                );
+    double a2 =     ((A+1)+(A-1)*cosw0 - 2*sqrtA*alpha);
     printout( a0, a1, a2, b0, b1, b2);
 }
 
 void highShelf(double f0, double dbGain) {
     double A = pow(10.0, dbGain / 40.0);
     double w0 = 2 * pi * f0  /Fs;
+    double cosw0 = cos(w0);
+    double sqrtA = sqrt(A);
     double S = 1;
     double alpha = sin(w0)/2*sqrt((A+1/A)*(1/S-1)+2);
-    double b0 =   A*((A+1)+(A-1)*cos(w0) + 2*sqrt(A)*alpha);
-    double b1 =-2*A*((A-1)+(A+1)*cos(w0)                  );
-    double b2 =   A*((A+1)+(A-1)*cos(w0) - 2*sqrt(A)*alpha);
-    double a0 =     ((A+1)-(A-1)*cos(w0) + 2*sqrt(A)*alpha);
-    double a1 = 2*  ((A-1)-(A+1)*cos(w0)                  );
-    double a2 =     ((A+1)-(A-1)*cos(w0) - 2*sqrt(A)*alpha);
+    double b0 =   A*((A+1)+(A-1)*cosw0 + 2*sqrtA*alpha);
+    double b1 =-2*A*((A-1)+(A+1)*cosw0                );
+    double b2 =   A*((A+1)+(A-1)*cosw0 - 2*sqrtA*alpha);
+    double a0 =     ((A+1)-(A-1)*cosw0 + 2*sqrtA*alpha);
+    double a1 = 2*  ((A-1)-(A+1)*cosw0                );
+    double a2 =     ((A+1)-(A-1)*cosw0 - 2*sqrtA*alpha);
     printout( a0, a1, a2, b0, b1, b2);
 }
 
@@ -143,52 +148,82 @@ FILE *fopen_save(char *x) {
 
 enum {LOW, HIGH, PEAKING};
 
-int main(int argc, char *argv[]) {
+char *nextArg(char **string, int skip) {
+    char *retval;
+    (*string) += skip;
+    while (**string == ' ') {
+        (*string)++;
+    }
+    retval = *string;
+    while (**string != ' ' && **string) {
+        (*string)++;
+    }
+    return retval;
+}
+
+int main(void) {
     double f;
     int dbcnt;
-    int filterCnt;
+    int filterCnt = 0;
     double mindb=-20, maxdb=20, stepdb=1;
     int i, j;
     char *includeFile = "coeffs.h";
     char *sourceFile = "coeffs.xc";
     char *responseCurve = "response.csv";
+    char *argString = FILTER;
+
+#ifdef INCLUDEFILE
+    includeFile = INCLUDEFILE;
+#endif
+
+#ifdef XCFILE
+    sourceFile = XCFILE;
+#endif
+
+#ifdef CSVFILE
+    responseCurve = CSVFILE;
+#endif
 
     struct {
         double freq, bw;
         int type;
-    } filters[100];
+    } filters[40];
 
-    if (argc < 5) usage();
-    for( i = 1; i<argc; i++) {
-        if (strcmp(argv[i], "-low") == 0) {
+    while (*argString) {
+        printf("%s ... %d\n", argString, filterCnt);
+        if (*argString == ' ') {
+            argString++;
+            continue;
+        }
+        if (strncmp(argString, "-low", 4) == 0) {
             filters[filterCnt].type = LOW;
-            filters[filterCnt].freq = atof(argv[++i]);
+            filters[filterCnt].freq = atof(nextArg(&argString, 4));
             filterCnt++;
-        } else if (strcmp(argv[i], "-high") == 0) {
+        } else if (strncmp(argString, "-high", 5) == 0) {
             filters[filterCnt].type = HIGH;
-            filters[filterCnt].freq = atof(argv[++i]);
+            filters[filterCnt].freq = atof(nextArg(&argString, 5));
             filterCnt++;
-        } else if (strcmp(argv[i], "-peaking") == 0) {
+        } else if (strncmp(argString, "-peaking", 8) == 0) {
             filters[filterCnt].type = PEAKING;
-            filters[filterCnt].freq = atof(argv[++i]);
-            filters[filterCnt].bw = atof(argv[++i]);
+            filters[filterCnt].freq = atof(nextArg(&argString, 8));
+            filters[filterCnt].bw = atof(nextArg(&argString, 0));
             filterCnt++;
-        } else if (strcmp(argv[i], "-fs") == 0) {
-            Fs = atof(argv[++i]);
-        } else if (strcmp(argv[i], "-bits") == 0) {
-            FRACTIONALBITS = atoi(argv[++i]);
-        } else if (strcmp(argv[i], "-min") == 0) {
-            mindb = atof(argv[++i]);
-        } else if (strcmp(argv[i], "-max") == 0) {
-            maxdb = atof(argv[++i]);
-        } else if (strcmp(argv[i], "-step") == 0) {
-            stepdb = atof(argv[++i]);
-        } else if (strcmp(argv[i], "-h") == 0) {
-            includeFile = argv[++i];
-        } else if (strcmp(argv[i], "-xc") == 0) {
-            sourceFile = argv[++i];
-        } else if (strcmp(argv[i], "-csv") == 0) {
-            responseCurve = argv[++i];
+        } else if (strncmp(argString, "-fs", 3) == 0) {
+            Fs = atof(nextArg(&argString, 3));
+        } else if (strncmp(argString, "-bits", 5) == 0) {
+            FRACTIONALBITS = atoi(nextArg(&argString, 5));
+        } else if (strncmp(argString, "-min", 4) == 0) {
+            mindb = atof(nextArg(&argString, 4));
+        } else if (strncmp(argString, "-max", 4) == 0) {
+            maxdb = atof(nextArg(&argString, 4));
+        } else if (strncmp(argString, "-step", 5) == 0) {
+            stepdb = atof(nextArg(&argString, 5));
+        } else if (strncmp(argString, "-h", 2) == 0) {
+            includeFile = nextArg(&argString, 2);
+        } else if (strncmp(argString, "-xc", 3) == 0) {
+            sourceFile = nextArg(&argString, 3);
+        } else if (strncmp(argString, "-csv", 4) == 0) {
+            responseCurve = nextArg(&argString, 4);
         } else {
             usage();
         }
@@ -199,7 +234,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Mindb should be less than maxdb\n");
         exit(1);
     }
-    if (dbcnt >= maxDbs) {
+    if (dbcnt > maxDbs) {
         fprintf(stderr, "Too many steps in db (>= %d), recompile the source\n", maxDbs);
         exit(1);
     }
@@ -207,7 +242,7 @@ int main(int argc, char *argv[]) {
     fdXC = fopen_save(sourceFile);
     fdCSV = fopen_save(responseCurve);
 
-    for(i = 0, f = 10; i < hzCnt; i++, f *= 1.0442737824274) {
+    for(i = 0, f = 10; i < hzCnt; i++, f *= 1.18920711500272106671) {
         freqs[i] = f;
     }
 
@@ -241,7 +276,7 @@ int main(int argc, char *argv[]) {
             "#include \"%s\"\n"
             "struct coeff biquads[DBS][BANKS] = {\n", stepdb, mindb, filterCnt, includeFile);
     thedb = 0;
-    fprintf(fdCSV, "\"\",\"\",", f);        
+    fprintf(fdCSV, "\"\",\"\",");        
     for(f = mindb; f <= maxdb+stepdb/1000; f+=stepdb) {
         fprintf(fdCSV, "\"%5.2f dB\",", f);        
         fprintf(fdXC, "  { //Db: %f\n", f);
@@ -259,7 +294,7 @@ int main(int argc, char *argv[]) {
             }
         }
         thedb++;
-        fprintf(fdXC, "  },\n", f);
+        fprintf(fdXC, "  },\n");
     }
     fprintf(fdXC, "};\n");
     fprintf(fdCSV, "\n");
