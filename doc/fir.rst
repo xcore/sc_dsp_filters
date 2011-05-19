@@ -29,12 +29,12 @@ Option               Effect
 -csv csvFileName     name of csv file, default response.csv
 ==================== =======================================
 
-One of -low, -high, -bp, or -bs must be specified. If you want multiple
-filters you need to run the program several times and sum together the
-coefficients. (TODO: allow one or more of those options, and sum them in
-the program).
+A single windowing function can be specified, if none is specified a
+Hamming window is used. The number of taps must be specified and must be
+odd. The corner frequency defaults to 48 KHz.
 
-The number of taps should be odd.
+One or more of -low, -high, -bp, or -bs must be specified. This creates a
+single FIR that implements the cascade of filters specified.
 
 The program outputs a source code file that initialises the coefficients
 table, and a CSV file that contains the response curves.

@@ -36,7 +36,7 @@ response curves. Coefficients and
 response curves for the biquad are computed based on algorithms by Robert
 Bristow-Johnson. 
 
-The current FIR and Biquad code are written for readability - less readable
+The current FIR code is written for readability - less readable
 (more efficient) versions to follow. The generic versions check on overflow
 and saturate (intermediate) results.
 
@@ -45,7 +45,7 @@ Known Issues
 ============
 
 * Makefile should invoke biquad generator properly - currently relies on
-  gcc, and currently recreates files unnecessarily.
+  java and javac, and currently recreates files unnecessarily.
 
 Required Repositories
 ================
