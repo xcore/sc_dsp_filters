@@ -185,49 +185,49 @@ class MakeFIR {
         
         double freq = 0, freqh = 0;
         
-        for(i = 0; i<args.length; i++) {
-            if (args[i].equals("-low")) {
-                freq = Double.parseDouble(args[++i])/fs;
+        for(int k = 0; k<args.length; k++) {
+            if (args[k].equals("-low")) {
+                freq = Double.parseDouble(args[++k])/fs;
                 for( i = -80; i < 80+N; i++) {
                     if (i >=0 && i < N) {
                         c[i] += lp(freq, win, i, N);
                     }
                     e[i+80] += lp(freq, NOWINDOW, i, N);
                 }
-            } else if (args[i].equals("-high")) {
-                freq = Double.parseDouble(args[++i])/fs;
+            } else if (args[k].equals("-high")) {
+                freq = Double.parseDouble(args[++k])/fs;
                 for( i = -80; i < 80+N; i++) {
                     if (i >=0 && i < N) {
                         c[i] += hp(freq, win, i, N);
                     }
                     e[i+80] += hp(freq, NOWINDOW, i, N);
                 }
-            } else if (args[i].equals("-bp")) {
-                freq = Double.parseDouble(args[++i])/fs;
-                freqh = Double.parseDouble(args[++i])/fs;
+            } else if (args[k].equals("-bp")) {
+                freq = Double.parseDouble(args[++k])/fs;
+                freqh = Double.parseDouble(args[++k])/fs;
                 for( i = -80; i < 80+N; i++) {
                     if (i >=0 && i < N) {
                         c[i] += bp(freq, freqh, win, i, N);
                     }
                     e[i+80] += bp(freq, freqh, NOWINDOW, i, N);
                 }
-            } else if (args[i].equals("-bs")) {
-                freq = Double.parseDouble(args[++i])/fs;
-                freqh = Double.parseDouble(args[++i])/fs;
+            } else if (args[k].equals("-bs")) {
+                freq = Double.parseDouble(args[++k])/fs;
+                freqh = Double.parseDouble(args[++k])/fs;
                 for( i = -80; i < 80+N; i++) {
                     if (i >=0 && i < N) {
                         c[i] += bs(freq, freqh, win, i, N);
                     }
                     e[i+80] += bs(freq, freqh, NOWINDOW, i, N);
                 }
-            } else if (args[i].equals("-fs")) {
-                ++i;
-            } else if (args[i].equals("-n")) {
-                ++i;
-            } else if (args[i].equals("-xc")) {
-                ++i;
-            } else if (args[i].equals("-csv")) {
-                ++i;
+            } else if (args[k].equals("-fs")) {
+                ++k;
+            } else if (args[k].equals("-n")) {
+                ++k;
+            } else if (args[k].equals("-xc")) {
+                ++k;
+            } else if (args[k].equals("-csv")) {
+                ++k;
             }
         }
         sum = 0;
