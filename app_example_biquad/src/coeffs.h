@@ -1,7 +1,7 @@
 //Generated code - do not edit.
 
 #define BANKS 2
-#define DBS 41
+#define DBS 41 
 #define FRACTIONALBITS 27
 #ifdef __XC__
 extern struct coeff {int b0, b1, b2, a1, a2;} biquads[DBS][BANKS];
