@@ -38,7 +38,11 @@ USED_MODULES = module_fir
 #
 #  all : $(BIN_DIR)/my_app.xe
 
-all: $(BIN_DIR)/$(APP_NAME).xe
+all: coefficients $(BIN_DIR)/$(APP_NAME).xe
 	@echo Build Complete
+
+coefficients:
+	make -f ../../sc_dsp_filters/build_fir_coefficients/Makefile \
+		FILTER='-high 4000 -n 81 -hamming -xc src/coeffs.xc -csv bin/response.csv'
 
 clean: clean_common

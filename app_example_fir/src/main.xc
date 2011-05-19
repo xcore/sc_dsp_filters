@@ -7,6 +7,7 @@
 #include <print.h>
 #include "fir.h"
 
+#if 0
 int coeffs[3] = {
     0x01000000, //1
     0x02000000, //2
@@ -22,3 +23,4 @@ int main() {
     printintln(fir(3, coeffs, state,3));
     return 0;
 }
+#endif
