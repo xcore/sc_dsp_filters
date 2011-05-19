@@ -43,6 +43,7 @@ all: coefficients $(BIN_DIR)/$(APP_NAME).xe
 
 coefficients:
 	make -f ../../sc_dsp_filters/build_fir_coefficients/Makefile \
-		FILTER='-high 4000 -n 81 -hamming -xc src/coeffs.xc -csv bin/response.csv'
+		FILTER='-bp 400 1200 -bp 4000 12000 -n 281 -hamming -xc src/coeffs.xc -csv bin/response.csv'
 
 clean: clean_common
+	rm MakeFIR.class

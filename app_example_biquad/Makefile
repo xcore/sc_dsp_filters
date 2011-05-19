@@ -51,3 +51,4 @@ coefficients:
 #		FILTER='-min -12 -max 12 -step 1 -bits 27 -low 15.625 -peaking 31.25 1 -peaking 62.5 1 -peaking 125 1 -peaking 250 1 -peaking 500 1 -peaking 1000 1 -peaking 2000 1 -peaking 4000 1 -high 8000' \
 
 clean: clean_common
+	rm MakeCoeffs.class MakeCoeffs?F.class

@@ -114,7 +114,7 @@ int sin(int x) {
     return 0;
 }
 
-int state[81];
+int state[281];
 extern int coeff[];
 
 int main(void) {
@@ -123,7 +123,7 @@ int main(void) {
         int v1000 = sin(i*2048/48);
         int v10000 = sin(i*1280/3);
         int v = (v100 + v1000 + v10000) << 4;
-        int o = fir(v, coeff, state, 81);
+        int o = fir(v, coeff, state, 281);
         printf("%d %d %d\n", i, v, o);
     }
     return 0;

@@ -3,4 +3,4 @@ all: MakeCoeffs.class
 
 MakeCoeffs.class: ../../sc_dsp_filters/build_biquad_coefficients/src/MakeCoeffs.java
 	javac  ../../sc_dsp_filters/build_biquad_coefficients/src/MakeCoeffs.java
-	cp ../../sc_dsp_filters/build_biquad_coefficients/src/MakeCoeffs*.class .
+	mv ../../sc_dsp_filters/build_biquad_coefficients/src/MakeCoeffs*.class .
