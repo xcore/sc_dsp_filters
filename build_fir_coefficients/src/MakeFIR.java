@@ -123,11 +123,6 @@ class MakeFIR {
         return null;
     }
 
-    final int LOW = 1;
-    final int HIGH = 2;
-    final int BP = 3;
-    final int BS = 4;
-
     public static void main(String[] args) {
         new MakeFIR(args);
     }
@@ -137,30 +132,23 @@ class MakeFIR {
         double fs = 48000;
         String sourceFile = "coeffs.xc";
         String responseCurve = "response.csv";
-        double [] c = null;
+        double [] c = null, e = null;
         int win = HAMMING;
         int type = 0;
         int N = 0;
-        double sum = 0, x = 0;
+        double sum = 0;
         double tsum = 0;
         PrintStream fdXC, fdCSV;
-        double freq = 0, freqh = 0;
         
         for(i = 0; i<args.length; i++) {
             if (args[i].equals("-low")) {
-                type = LOW;
-                freq = Double.parseDouble(args[++i]);
+                i++;
             } else if (args[i].equals("-high")) {
-                type = HIGH;
-                freq = Double.parseDouble(args[++i]);
+                i++;
             } else if (args[i].equals("-bp")) {
-                type = BP;
-                freq = Double.parseDouble(args[++i]);
-                freqh = Double.parseDouble(args[++i]);
+                i += 2;
             } else if (args[i].equals("-bs")) {
-                type = BS;
-                freq = Double.parseDouble(args[++i]);
-                freqh = Double.parseDouble(args[++i]);
+                i += 2;
             } else if (args[i].equals("-fs")) {
                 fs = Double.parseDouble(args[++i]);
             } else if (args[i].equals("-gaussian")) {
@@ -174,6 +162,10 @@ class MakeFIR {
             } else if (args[i].equals("-n")) {
                 N = Integer.parseInt(args[++i]);
                 c = new double[N];
+                e = new double[N+160];
+                if ((N&1) == 0) {
+                    System.err.println("N must be odd\n");
+                }
             } else if (args[i].equals("-xc")) {
                 sourceFile = args[++i];
             } else if (args[i].equals("-csv")) {
@@ -184,60 +176,76 @@ class MakeFIR {
             }
             
         }
-        if (c == null || type == 0 || (N&1) == 0) {
+        if (c == null) {
+            System.err.println("N must be specified\n");
             usage();
         }
         fdXC = fopen_save(sourceFile);
         fdCSV = fopen_save(responseCurve);
         
-        freq /= fs;
-        freqh /= fs;
-        for( i = 0; i < N; i++) {
-            switch(type) {
-            case LOW:
-                c[i] = lp(freq, win, i, N);
-                break;
-            case HIGH:
-                c[i] = hp(freq, win, i, N);
-                break;
-            case BP:
-                c[i] = bp(freq, freqh, win, i, N);
-                break;
-            case BS:
-                c[i] = bs(freq, freqh, win, i, N);
-                break;
+        double freq = 0, freqh = 0;
+        
+        for(i = 0; i<args.length; i++) {
+            if (args[i].equals("-low")) {
+                freq = Double.parseDouble(args[++i])/fs;
+                for( i = -80; i < 80+N; i++) {
+                    if (i >=0 && i < N) {
+                        c[i] += lp(freq, win, i, N);
+                    }
+                    e[i+80] += lp(freq, NOWINDOW, i, N);
+                }
+            } else if (args[i].equals("-high")) {
+                freq = Double.parseDouble(args[++i])/fs;
+                for( i = -80; i < 80+N; i++) {
+                    if (i >=0 && i < N) {
+                        c[i] += hp(freq, win, i, N);
+                    }
+                    e[i+80] += hp(freq, NOWINDOW, i, N);
+                }
+            } else if (args[i].equals("-bp")) {
+                freq = Double.parseDouble(args[++i])/fs;
+                freqh = Double.parseDouble(args[++i])/fs;
+                for( i = -80; i < 80+N; i++) {
+                    if (i >=0 && i < N) {
+                        c[i] += bp(freq, freqh, win, i, N);
+                    }
+                    e[i+80] += bp(freq, freqh, NOWINDOW, i, N);
+                }
+            } else if (args[i].equals("-bs")) {
+                freq = Double.parseDouble(args[++i])/fs;
+                freqh = Double.parseDouble(args[++i])/fs;
+                for( i = -80; i < 80+N; i++) {
+                    if (i >=0 && i < N) {
+                        c[i] += bs(freq, freqh, win, i, N);
+                    }
+                    e[i+80] += bs(freq, freqh, NOWINDOW, i, N);
+                }
+            } else if (args[i].equals("-fs")) {
+                ++i;
+            } else if (args[i].equals("-n")) {
+                ++i;
+            } else if (args[i].equals("-xc")) {
+                ++i;
+            } else if (args[i].equals("-csv")) {
+                ++i;
             }
         }
-        
         sum = 0;
         for( i = -80; i < 80+N; i++) {
             if (i == (N>>1)) continue;
-            switch(type) {
-            case LOW:
-                x = lp(freq, NOWINDOW, i, N);
-                break;
-            case HIGH:
-                x = hp(freq, NOWINDOW, i, N);
-                break;
-            case BP:
-                x = bp(freq, freqh, NOWINDOW, i, N);
-                break;
-            case BS:
-                x = bs(freq, freqh, NOWINDOW, i, N);
-                break;
-            }
             if (i >= N || i < 0) {
-                sum += sqr(x);
+                sum += sqr(e[i+80]);
             } else {
-                sum += sqr(x - c[i]);
+                sum += sqr(e[i+80] - c[i]);
             }
-            tsum += sqr(x);
+            tsum += sqr(e[i+80]);
         }
         sum = Math.sqrt(sum)/Math.sqrt(tsum);
         System.out.print("Error: " + (sum*100) + "%\n");
         if (sum > 0.20) {
             System.out.print("    More taps?\n");
         }
+        
         
         fdXC.print("//Generated code - do not edit.\n\n" +
                    "int coeff[" + N + "] = {\n");
