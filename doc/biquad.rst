@@ -44,7 +44,8 @@ Example calls are::
   -low 400 -peaking 800 1 -peaking 1600 1 -high 3200
 
 The program outputs an include file, a source code file that initialises the coefficients
-table, and a CSV file that contains the response curves.
+table, and a CSV file that contains the response curves. The curves are calculated using
+maths from http://groups.google.com/group/comp.dsp/browse_frm/thread/8c0fa8d396aeb444/a1bc5b63ac56b686
 
 Calling Biquad
 --------------
