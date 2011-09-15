@@ -41,7 +41,8 @@ biquadAsm:
     ldc   r6, 1
     shl   r6, r6, r5
     shr   r6, r6, 1
-    
+
+.xtaloop BANKS    
 loop:
     ldc   r4, 5*BANKS       // words per filter * BANKS
     ldw   r9, r1[2]
@@ -87,7 +88,8 @@ resultFits:
 
 resultDone: 
     add  r8, r8, 1                // Rest bank counter
-    eq   r11, r8, BANKS           // Last bank?
+	  ldc  r11, BANKS
+    eq   r11, r8, r11             // Last bank?
     bf   r11, loop                // If not, jump, this clears r11
 
     stw   r2, r1[1]               // store yn1
