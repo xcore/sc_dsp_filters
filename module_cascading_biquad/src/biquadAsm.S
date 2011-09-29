@@ -6,7 +6,7 @@
     .globl biquadAsm
     .globl biquadAsm.nstackwords
     .linkset biquadAsm.nstackwords,NWORDS
-    
+    .align 4
 biquadAsm:
     entsp NWORDS
     stw   r4, sp[0]
