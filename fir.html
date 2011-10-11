@@ -1,0 +1,190 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using FIR filters &mdash; DSP filtering v0v1 documentation</title>
+    <link rel="stylesheet" href="_static/xdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0v1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://mathjax.connectmv.com/MathJax.js"></script>
+    <script type="text/javascript" src="_static/xcomment.js"></script>
+    <link rel="top" title="DSP filtering v0v1 documentation" href="index.html" />
+    <link rel="next" title="DSP Filtering" href="summary.html" />
+    <link rel="prev" title="Using Biquad filters" href="biquad.html" /> 
+
+<script>
+function setheight() {
+h1 = document.getElementById('d1').style.height;
+h2 = document.getElementById('d2').style.height;
+
+if (parseInt(h1) > parseInt(h2)) {
+document.getElementById('d2').style.height=h1 + "px";
+}
+else {
+document.getElementById('d1').style.height=h2 + "px";
+}
+
+}
+</script>
+</head>
+
+<body onload="setheight();">
+
+  
+
+    <div class="document" id='d1'>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+<div style="float: right">
+<a href="biquad.html"
+                        title="previous chapter"> &lt&lt </a>
+<a href="summary.html"
+                        title="next chapter"> &gt&gt </a></p>
+</div>
+
+            
+  <div class="section" id="using-fir-filters">
+<h1>Using FIR filters<a class="headerlink" href="#using-fir-filters" title="Permalink to this headline">¶</a></h1>
+<p>TO use a FIR filter you need to (1) compute a set of FIR coefficients and
+(2) insert these coefficients in the source code and call the FIR function
+to perform a FIR.</p>
+<div class="section" id="computing-fir-coefficients">
+<h2>Computing FIR coefficients<a class="headerlink" href="#computing-fir-coefficients" title="Permalink to this headline">¶</a></h2>
+<p>The program to compute the filter coefficients is in build_fir_coefficients
+directory. It accepts the following options:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="34%" />
+<col width="66%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Option</th>
+<th class="head">Effect</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>-low freq</td>
+<td>Lowpass filter, with given corner freq</td>
+</tr>
+<tr><td>-high freq</td>
+<td>Highpass filter, with given corner freq</td>
+</tr>
+<tr><td>-bp freql freqh</td>
+<td>Bandpass filter, with given frequencies</td>
+</tr>
+<tr><td>-bs freql freqh</td>
+<td>Bandstop filter, with given frequencies</td>
+</tr>
+<tr><td>-gaussian</td>
+<td>Gaussian window</td>
+</tr>
+<tr><td>-blackman</td>
+<td>Blackman window</td>
+</tr>
+<tr><td>-hamming</td>
+<td>Hamming window (default)</td>
+</tr>
+<tr><td>-hann</td>
+<td>Hann window</td>
+</tr>
+<tr><td>-n taps</td>
+<td>Number of taps - should be odd</td>
+</tr>
+<tr><td>-fs freq</td>
+<td>Sample frequency, default 48000</td>
+</tr>
+<tr><td>-xc sourceFileName</td>
+<td>name of source file, default coeffs.xc</td>
+</tr>
+<tr><td>-csv csvFileName</td>
+<td>name of csv file, default response.csv</td>
+</tr>
+</tbody>
+</table>
+<p>A single windowing function can be specified, if none is specified a
+Hamming window is used. The number of taps must be specified and must be
+odd. The corner frequency defaults to 48 KHz.</p>
+<p>One or more of -low, -high, -bp, or -bs must be specified. This creates a
+single FIR that implements the cascade of filters specified.</p>
+<p>The program outputs a source code file that initialises the coefficients
+table, and a CSV file that contains the response curves.</p>
+<p>The program outputs a percentage error, indicating roughly how much of your
+filter got lost because of limitations in the number of taps and the
+windowing. If the error is high, you can try and increase the number of
+taps. Note that low cut-off frequencies (relative to the sample frequency)
+require a high number of taps.</p>
+</div>
+<div class="section" id="calling-fir">
+<h2>Calling FIR<a class="headerlink" href="#calling-fir" title="Permalink to this headline">¶</a></h2>
+<p>The function that performs the run time fir is in module_fir. Inlcude the
+file fir.h and call:</p>
+<div class="highlight-none"><div class="highlight"><pre>filteredSample = fir(sampleValue, coefficientTable, stateTable, N)
+</pre></div>
+</div>
+<p>sampleValue should be a 8.24 fixed point number, and the function returns
+the filtered 8.24 value. CoefficientTable is the name of the array that
+was produced by the code above, stateTable should be an array of N integers
+which is initialised to all zeroes prior to the first call to fir, and N is
+the number of taps (the -n parameter above). The stateTable will contain
+N old samples.</p>
+</div>
+</div>
+
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" id='d2'>
+        <div class="sphinxsidebarwrapper">
+<h3><a href="index.html">DSP filtering (0v1)</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="biquad.html">Using Biquad filters</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Using FIR filters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#computing-fir-coefficients">Computing FIR coefficients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#calling-fir">Calling FIR</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="summary.html">DSP Filtering</a></li>
+</ul>
+
+<div id="searchbox" style="display: none;margin-bottom: 10px;">
+  <h3>Search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+
+
+    <div class="footer">
+    </div>
+  </body>
+</html>
+
+
+

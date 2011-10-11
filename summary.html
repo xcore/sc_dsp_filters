@@ -1,0 +1,280 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>DSP Filtering &mdash; DSP filtering v0v1 documentation</title>
+    <link rel="stylesheet" href="_static/xdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0v1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://mathjax.connectmv.com/MathJax.js"></script>
+    <script type="text/javascript" src="_static/xcomment.js"></script>
+    <link rel="top" title="DSP filtering v0v1 documentation" href="index.html" />
+    <link rel="prev" title="Using FIR filters" href="fir.html" /> 
+
+<script>
+function setheight() {
+h1 = document.getElementById('d1').style.height;
+h2 = document.getElementById('d2').style.height;
+
+if (parseInt(h1) > parseInt(h2)) {
+document.getElementById('d2').style.height=h1 + "px";
+}
+else {
+document.getElementById('d1').style.height=h2 + "px";
+}
+
+}
+</script>
+</head>
+
+<body onload="setheight();">
+
+  
+
+    <div class="document" id='d1'>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+<div style="float: right">
+<a href="fir.html"
+                        title="previous chapter"> &lt&lt </a>
+</div>
+
+            
+  <div class="section" id="dsp-filtering">
+<h1>DSP Filtering<a class="headerlink" href="#dsp-filtering" title="Permalink to this headline">¶</a></h1>
+<p>DSP filters perform functions such as low-pass or peaking filters. Filters
+work in the time domain, and do
+not transform data from the time to frequency domains; look for
+sc_dsp_transforms for that.</p>
+<p>There are shelves of textbooks that cover filtering; a two-page summary is
+necessarily incomplete. Typical characterisations of filters include:</p>
+<ul>
+<li><p class="first">Sample rate. Input and output sample rates may be
+identical, or the filter may perform some form of sample-rate conversion
+(eg, 44.1 to 48 KHz audio)</p>
+</li>
+<li><p class="first">Number of channels. The number of channels on which identical filters are
+performed. For example, two audio channels that have identical treble and
+bass settings.</p>
+</li>
+<li><p class="first">Precision. The number of bits before and after the binary point that
+contain valid data. Typical precisions are 16 bits or 24 bits for audio
+signals, or XXX for motor control.</p>
+<p>Inside the filter, data is accumulated with a
+certain precision. This may be higher precision than the input operation
+in order to avoid accumulative rounding errors.</p>
+</li>
+<li><p class="first">Overflow. What to do on overflow: saturate, wrap around, or trap.</p>
+</li>
+<li><p class="first">Rounding. After a filter round there will be some bits that are
+discarded, and some for of rounding needs to take place. Typical ones
+include dithering (adding triangular noise in the range [-0.5 .. 0.5]),
+or ordinary rounding.</p>
+</li>
+<li><p class="first">Type of filter. The two main classes are Finite Impulse Response (FIR)
+and Infinite Impulse Response (IIR). For FIR filters the number of &#8220;taps&#8221;
+needs to be specified (that is, the number of coefficients to filter with).</p>
+</li>
+<li><p class="first">The filter coefficients. This is often where a company adds value. There
+are many methods for computing coefficients for, for example, low-shelf,
+or bandpass filters, but all have imperfect responses. A domain expert
+can create filter-coefficients that have a good response for a particular
+domain.</p>
+</li>
+</ul>
+<p>As a rule of thumb, computational requirements are linear in the sample
+rate and linear in the number of channels. Double either, and the
+computational requirements doubles. Double both and the computations go up
+four-fold.</p>
+<p>Most filters are based around 32-bit input data, with a 64-bit accumulator.
+The coefficients should be worked out so that there is sufficient
+&#8220;headroom&#8221; in the accumulator and in the data. For example, if all data
+samples are between -1 and +1 represented as a 24-bit signed number, then
+there are 7-bits (32 - 24 data bits - 1 sign bit) headroom. All numbers are
+represented as fixed-point numbers, and the precision is defined by the
+filter.</p>
+<p>Typically, overflow leads to saturation, but this adds computational
+complexity, and may be removed if not desired. Numbers are typically
+rounded to the nearest value, with 0.5 being rounded up.</p>
+<p>There are at present two modules, an FIR filter and a Biquad filter, the
+latter implements an IIR filter using a biquad. Scripts are provided to
+compute coefficients, but it is worth noting that these are textbook
+computations, and that better coefficients can be designed by domain
+experts.</p>
+<div class="section" id="module-cascading-biquad">
+<h2>module_cascading_biquad<a class="headerlink" href="#module-cascading-biquad" title="Permalink to this headline">¶</a></h2>
+<p>This module provides a function that filters a data stream through a series
+of N biquads. The input data is in 8.24 format, a sign bit, seven bits
+before the binary point, and 24 bits behind the binary point. Assuming a
+single 50 MIPS thread:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="19%" />
+<col width="19%" />
+<col width="13%" />
+<col width="15%" />
+<col width="19%" />
+</colgroup>
+<tbody valign="top">
+<tr><td colspan="2">Functionality provided</td>
+<td colspan="3">Resources required</td>
+<td rowspan="2">Status</td>
+</tr>
+<tr><td>Channels</td>
+<td>Filters</td>
+<td>Thread cycles</td>
+<td>Max rate</td>
+<td>Memory</td>
+</tr>
+<tr><td>1</td>
+<td>1</td>
+<td>53</td>
+<td>943 KHz</td>
+<td>? KB</td>
+<td>Implemented</td>
+</tr>
+<tr><td>2</td>
+<td>1</td>
+<td>106</td>
+<td>471 KHz</td>
+<td>? KB</td>
+<td>Implemented</td>
+</tr>
+<tr><td>1</td>
+<td>2 in series</td>
+<td>77</td>
+<td>649 KHz</td>
+<td>? KB</td>
+<td>Implemented</td>
+</tr>
+<tr><td>M</td>
+<td>N in series</td>
+<td>M (29+24 N)</td>
+<td>50/...</td>
+<td>? KB</td>
+<td>Implemented</td>
+</tr>
+</tbody>
+</table>
+<p>Biquads that are executed in parallel can be implemented at a similar cost,
+but lead to interesting phase shifts.</p>
+</div>
+<div class="section" id="module-fir">
+<h2>module_fir<a class="headerlink" href="#module-fir" title="Permalink to this headline">¶</a></h2>
+<p>The FIR module implements a function that performs a single FIR. If
+multiple FIRs are to be applied, the coefficients can be summed at compile
+time. Its performance solely depends on the number of taps and the number
+of channels (note - this is not an optimised version) (Note: these numbers
+are approximate:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="18%" />
+<col width="18%" />
+<col width="12%" />
+<col width="14%" />
+<col width="25%" />
+</colgroup>
+<tbody valign="top">
+<tr><td colspan="2">Functionality provided</td>
+<td colspan="3">Resources required</td>
+<td rowspan="2">Status</td>
+</tr>
+<tr><td>Channels</td>
+<td>Taps</td>
+<td>Thread cycles</td>
+<td>Max rate</td>
+<td>Memory</td>
+</tr>
+<tr><td>1</td>
+<td>1</td>
+<td>43</td>
+<td>1.1 MHz</td>
+<td>? KB</td>
+<td>Implemented, TBC</td>
+</tr>
+<tr><td>2</td>
+<td>1</td>
+<td>86</td>
+<td>581 KHz</td>
+<td>? KB</td>
+<td>Implemented, TBC</td>
+</tr>
+<tr><td>1</td>
+<td>2</td>
+<td>43</td>
+<td>943 KHz</td>
+<td>? KB</td>
+<td>Implemented, TBC</td>
+</tr>
+<tr><td>M</td>
+<td>N</td>
+<td>M (33+10 N)</td>
+<td>50/...</td>
+<td>? KB</td>
+<td>Implemented, TBC</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" id='d2'>
+        <div class="sphinxsidebarwrapper">
+<h3><a href="index.html">DSP filtering (0v1)</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="biquad.html">Using Biquad filters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fir.html">Using FIR filters</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">DSP Filtering</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-cascading-biquad">module_cascading_biquad</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-fir">module_fir</a></li>
+</ul>
+</li>
+</ul>
+
+<div id="searchbox" style="display: none;margin-bottom: 10px;">
+  <h3>Search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+
+
+    <div class="footer">
+    </div>
+  </body>
+</html>
+
+
+

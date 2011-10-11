@@ -1,0 +1,204 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using Biquad filters &mdash; DSP filtering v0v1 documentation</title>
+    <link rel="stylesheet" href="_static/xdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0v1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://mathjax.connectmv.com/MathJax.js"></script>
+    <script type="text/javascript" src="_static/xcomment.js"></script>
+    <link rel="top" title="DSP filtering v0v1 documentation" href="index.html" />
+    <link rel="next" title="Using FIR filters" href="fir.html" />
+    <link rel="prev" title="Documentation" href="index.html" /> 
+
+<script>
+function setheight() {
+h1 = document.getElementById('d1').style.height;
+h2 = document.getElementById('d2').style.height;
+
+if (parseInt(h1) > parseInt(h2)) {
+document.getElementById('d2').style.height=h1 + "px";
+}
+else {
+document.getElementById('d1').style.height=h2 + "px";
+}
+
+}
+</script>
+</head>
+
+<body onload="setheight();">
+
+  
+
+    <div class="document" id='d1'>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+<div style="float: right">
+<a href="index.html"
+                        title="previous chapter"> &lt&lt </a>
+<a href="fir.html"
+                        title="next chapter"> &gt&gt </a></p>
+</div>
+
+            
+  <div class="section" id="using-biquad-filters">
+<h1>Using Biquad filters<a class="headerlink" href="#using-biquad-filters" title="Permalink to this headline">¶</a></h1>
+<p>The biquad library provides a cascade of biquad filters, each performing a
+specific filter operation. A typical use is to get one filter to perform a
+low shelf (bass boost), one filter to perform a high shelf gain (treble
+boost) and a number of filters to boost specific bands. Put in series, this
+implements a graphics equaliser.</p>
+<p>To use a Biquad filter you need to (1) compute a set of Biquad coefficients and
+(2) insert these coefficients in the source code and call the Biquad function
+to perform a Biquad.</p>
+<div class="section" id="computing-biquad-coefficients">
+<h2>Computing Biquad coefficients<a class="headerlink" href="#computing-biquad-coefficients" title="Permalink to this headline">¶</a></h2>
+<p>The program to compute the filter coefficients is in build_biquad_coefficients
+directory. It accepts the following options:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="77%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Option</th>
+<th class="head">Effect</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>-low freq</td>
+<td>Low shelf filter, with given corner freq</td>
+</tr>
+<tr><td>-high freq</td>
+<td>High shelf filter, with given corner freq</td>
+</tr>
+<tr><td>-peaking freq bw</td>
+<td>PeakingEQ filter, with given corner freq and bandwidth in octaves</td>
+</tr>
+<tr><td>-bits fractionalBits</td>
+<td>number of fractional bits, default 24</td>
+</tr>
+<tr><td>-min minDb</td>
+<td>minimal dB value, default -20</td>
+</tr>
+<tr><td>-max maxDb</td>
+<td>maximal dB value, default +20</td>
+</tr>
+<tr><td>-step dbStep</td>
+<td>dBs between each step, default 1</td>
+</tr>
+<tr><td>-fs freq</td>
+<td>Sample frequency, default 48000</td>
+</tr>
+<tr><td>-h includeFileName</td>
+<td>name of include file, default coeffs.h</td>
+</tr>
+<tr><td>-xc sourceFileName</td>
+<td>name of source file, default coeffs.xc</td>
+</tr>
+<tr><td>-csv csvFileName</td>
+<td>name of csv file, default response.csv</td>
+</tr>
+</tbody>
+</table>
+<p>At least one of -low, -high, -bp, or -bs must be specified. The program builds a set
+of biquad coefficients for each filter. For each biquad it generates a
+table for each dB gain level, from min to max in the given number of steps.
+Example calls are:</p>
+<div class="highlight-none"><div class="highlight"><pre>-min -20 -max 20 -step 4 -low 250 -high 4000
+-low 400 -peaking 800 1 -peaking 1600 1 -high 3200
+</pre></div>
+</div>
+<p>The program outputs an include file, a source code file that initialises the coefficients
+table, and a CSV file that contains the response curves. The curves are calculated using
+maths from <a class="reference external" href="http://groups.google.com/group/comp.dsp/browse_frm/thread/8c0fa8d396aeb444/a1bc5b63ac56b686">http://groups.google.com/group/comp.dsp/browse_frm/thread/8c0fa8d396aeb444/a1bc5b63ac56b686</a></p>
+</div>
+<div class="section" id="calling-biquad">
+<h2>Calling Biquad<a class="headerlink" href="#calling-biquad" title="Permalink to this headline">¶</a></h2>
+<p>The function that performs the run time fir is in module_cascading_biquad. Include the
+generated include file and call:</p>
+<div class="highlight-none"><div class="highlight"><pre>filteredSample = biquadCascade(state, sampleValue);
+</pre></div>
+</div>
+<p>sampleValue should be a 8.24 fixed point number, and the function returns
+the filtered 8.24 value. The variable state holds the state of all biquads,
+it has to be initialised as follows:</p>
+<div class="highlight-none"><div class="highlight"><pre>initBiquads(state, zeroDb);
+</pre></div>
+</div>
+<p>Where zeroDb is the index into the db table that is 0 dB, 20 in the default
+setting (from -20 db in steps of 1 db), or (-min/steps) in the general
+case.</p>
+<p>When biqaudCascade is called the sample is subjected to each biquad in
+turn. Initially each biquad filter is set to a 0 dB gain (ie, no change). Between
+calls to biquadCascade, the code can change the desiredDb array in the
+state variable. This array holds the gain for each biquad, expressed as an
+array index: 0 is the minimal gain, and (max-min)/steps is the maximal
+gain. Ie, if you have a low-shelf, three peakingEq and a high-shelf biquad,
+then the desiredDb array has five elements referring to the filters that
+were specified on the command line. The biquadCascade function will slowly
+adjust the gain level of each filter to match the desiredDb, enabling a
+click-free transition.</p>
+</div>
+</div>
+
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" id='d2'>
+        <div class="sphinxsidebarwrapper">
+<h3><a href="index.html">DSP filtering (0v1)</a></h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Using Biquad filters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#computing-biquad-coefficients">Computing Biquad coefficients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#calling-biquad">Calling Biquad</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fir.html">Using FIR filters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="summary.html">DSP Filtering</a></li>
+</ul>
+
+<div id="searchbox" style="display: none;margin-bottom: 10px;">
+  <h3>Search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+
+
+    <div class="footer">
+    </div>
+  </body>
+</html>
+
+
+
