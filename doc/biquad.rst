@@ -1,32 +1,31 @@
-Using Biquad filters
-....................
+module_cascading_biquad
+.......................
 
 The biquad library provides a cascade of biquad filters, each performing a
 specific filter operation. A typical use is to get one filter to perform a
 low shelf (bass boost), one filter to perform a high shelf gain (treble
 boost) and a number of filters to boost specific bands. Put in series, this
-implements a graphics equaliser.
+implements a "graphical equaliser".
 
-To use a Biquad filter you need to (1) compute a set of Biquad coefficients and
-(2) insert these coefficients in the source code and call the Biquad function
-to perform a Biquad.
+In general filters can be static (for example, a low shelf 400 Hz filter at
++20dB to create bass boost), or dynamic (for example a low shelf 400 Hz
+filter at anything between -20 and +20 dB). The current code base assumes
+that filters are dynamic, and that there is a precomputed table of
+coefficients for all filter for all possible dB values. This enables the
+filter to gradually change coefficients when a new dB value is desired. It
+is simple to remove the code that reacts to responses in the dB value and
+that just uses a single static dB value for each filter.
 
+The module is optimised for performance, and assumes that there is a series
+of channels that will all be filtered using the same table of coefficients
+and dB values, but with separate dB settings for separate channels.
 
-
-API
----
-
-
-When biqaudCascade is called the sample is subjected to each biquad in
-turn. Initially each biquad filter is set to a 0 dB gain (ie, no change). Between
-calls to biquadCascade, the code can change the desiredDb array in the
-state variable. This array holds the gain for each biquad, expressed as an
-array index: 0 is the minimal gain, and (max-min)/steps is the maximal
-gain. Ie, if you have a low-shelf, three peakingEq and a high-shelf biquad,
-then the desiredDb array has five elements referring to the filters that
-were specified on the command line. The biquadCascade function will slowly
-adjust the gain level of each filter to match the desiredDb, enabling a
-click-free transition.
+The rest of this section explain the two parts that this module comprises.
+We first document the way to use the module to filter data, *assuming that
+there is a set of coefficients*. In order to compute the coefficients, you
+can call a provided java program, or you can provide your own coefficients.
+Note that the number of banks, the number of dB levels, and the
+representations of the numbers are all compile-time constants.
 
 API
 ---
@@ -55,7 +54,8 @@ code. This file must set the following ``#define`` s:
 
     This define sets the number of bits in the fractional part of
     fixed point numbers used to represent samples and coefficients. 
-
+    the number 1 is represented as ``1 << FRACTIONALBITS``, -1 is represented
+    as ``-1 << FRACTIONALBITS``.
 
 Types
 '''''
@@ -90,7 +90,7 @@ This file states that we want to cascade two biquad filters, each filter
 has three possible dB settings, and all numbers are represented in 5.27
 format; that is, there are 27 bits behind the fixed point, and a sign bit
 with four bits before the fixed point. Hence, 0x08000000 represents +1 and
-0xF7FFFFFF represents -1. Increments of 1 represent increments in 2^-27.
+0xF7000000 represents -1. Increments of 1 represent increments in 2^-27.
 The range of numbers that can be represented is [-16..16).
 
 The coefficient array needs to be defined, for example as follows::
@@ -98,35 +98,38 @@ The coefficient array needs to be defined, for example as follows::
   struct coeff biquads[DBS][BANKS] = {
     {
       {133860500, -261873323, 128137849, 261857137, -127796807},
-      {111128665, -137894758,  50929490, 176727474,  -66673143},
+      {111128665, -137894758,  50929490, 176727474,  -66673143}
     },
     {
       {134217728, -262224926, 128147672, 262224926, -128147672},
-      {134217728, -171749357,  64101347, 171749357,  -64101347},
+      {134217728, -171749357,  64101347, 171749357,  -64101347}
     },
     {
       {134575909, -262555944, 128137853, 262572173, -128479804},
-      {162103977, -213445919,  80525738, 166544979,  -61511046},
-    },
+      {162103977, -213445919,  80525738, 166544979,  -61511046}
+    }
+  };
 
 The first number, 133860500, represents 0.997338443994522, and is the value
-of b1 for filter bank 0 db setting 0.
+of b1/a0 for filter bank 0 db setting 0. Each row represents one of three
+possible dB settings. In this example, we have chosen the dB settings -2
+dB, 0 dB, and +2 dB. 
 
 To filter two channels we declare two state variables that are both
-initialised to use the middle dB value::
+initialised to use the middle dB index (1) which represents 0 dB::
 
   biquadState leftState, rightState;
 
   initBiquads(leftState, 1);
   initBiquads(rightState, 1);
 
-After this samples can be filtered by calling biquadCascade():
+After this samples can be filtered by calling biquadCascade()::
 
   filteredLeftSample = biquadCascade(leftState, leftSample);
   filteredRightSample = biquadCascade(rightState, rightSample);
 
 To change the left filter bank to use a dB index of 2 for bank 0, set the
-desiredDb value as follows:
+desiredDb value as follows::
 
   leftState.desiredDb[0] = 2;
 
@@ -136,8 +139,8 @@ This will take effect over a period of time.
 Computing Biquad coefficients
 -----------------------------
 
-Computing biquad coefficients is an art, and coefficients are the *special
-sauce* that many designers add. This module has a java program that uses a
+Computing biquad coefficients is an science, and coefficients are the special
+sauce that many designers add. This module provides a java program that uses a
 public domain algorithm to compute biquad coefficients. This program is in
 the build_biquad_coefficients directory. It accepts the following options:
 
@@ -160,14 +163,18 @@ Option               Effect
 At least one of -low, -high, -bp, or -bs must be specified. The program
 builds both the ``coeffs.h`` file that defines the number of banks, db
 levels, and precision, and a ``coeffs.xc`` file that contains the
-coefficients. For each filter the program generates a
-table for each dB gain level, from min to max in the given number of steps.
-Example calls are::
+coefficients array ``biquads``. For each filter (-low, -high, -peaking) the
+program generates a set of coefficients for each dB gain level, from min to
+max in the given number of steps. It can, for example, be invoked as follows::
 
   -min -20 -max 20 -step 4 -low 250 -high 4000
-  -low 400 -peaking 800 1 -peaking 1600 1 -high 3200
 
-The program outputs an include file, a source code file that initialises
-the coefficients table, and a CSV file that contains the response curves.
+This generates a table with 11 Db values (-20, -16, -12, -8, -4, 0, 4, 8,
+12, 16, 20) and two filters. Filter 0 is a low frequency filter with a
+corner frequency of 250 Hz, the latter is a high frequency filter with a
+corner frequency of 4000 Hz, assuming a 48 KHz sample frequency. All
+coefficients will be represented in the default 8.24 representation.
+
+The program also generates a CSV file that contains the response curves.
 The curves are calculated using maths from
 http://groups.google.com/group/comp.dsp/browse_frm/thread/8c0fa8d396aeb444/a1bc5b63ac56b686
