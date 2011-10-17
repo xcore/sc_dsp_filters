@@ -3,8 +3,9 @@
 // University of Illinois/NCSA Open Source License posted in
 // LICENSE.txt and at <http://github.xcore.com/>
 
-#include "coeffs.h"
 #include <stdio.h>
+#include "coeffs.h"
+#include "biquadCascade.h"
 
 /*
  * One quarter of a sine wave is stored in an array called sineWave. 513

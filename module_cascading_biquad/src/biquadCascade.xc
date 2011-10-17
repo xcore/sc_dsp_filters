@@ -7,6 +7,7 @@
 #include <xs1.h>
 #include <print.h>
 #include "coeffs.h"
+#include "biquadCascade.h"
 
 void initBiquads(biquadState &state, int zeroDb) {
     for(int i = 0; i <= BANKS; i++) {

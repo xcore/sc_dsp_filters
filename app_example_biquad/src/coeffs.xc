@@ -3,8 +3,9 @@
 // First index is the dbLevel, in steps of 1.0 db, first entry is -20.0 db
 // Second index is the filter number - this filter has 2 banks
 // Each structure instantiation contains the five coefficients for each biquad:
-// -a1/a0, -a2/a0, b0/a0, b1/a0, b2/a0; all numbers are stored in 2.30 fixed point
+// b0/a0, b1/a0, b2/a0, -a1/a0, -a2/a0; all numbers are stored in 2.30 fixed point
 #include "src/coeffs.h"
+#include "biquadCascade.h"
 struct coeff biquads[DBS][BANKS] = {
   { //Db: -20.0
     {130494996, -257593817, 127142451, 257397486, -123616050},

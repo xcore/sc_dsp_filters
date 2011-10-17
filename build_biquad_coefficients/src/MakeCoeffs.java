@@ -226,18 +226,7 @@ class MakeCoeffs {
                 "//Generated code - do not edit.\n\n" + 
                 "#define BANKS " + filterCnt + "\n" + 
                 "#define DBS "+ dbcnt +  " \n" + 
-                "#define FRACTIONALBITS " + FRACTIONALBITS + "\n" + 
-                "#ifdef __XC__\n" + 
-                "extern struct coeff {int b0, b1, b2, a1, a2;} biquads[DBS][BANKS];\n\n" + 
-                "typedef struct {\n" + 
-                "    struct {int xn1; int xn2; int db;} b[BANKS+1];\n" + 
-                "    int adjustDelay;\n" + 
-                "    int adjustCounter;\n" + 
-                "    int desiredDb[BANKS];\n" + 
-                "} biquadState;\n\n" + 
-                "extern void initBiquads(biquadState &state, int zeroDb);\n" + 
-                "extern int biquadCascade(biquadState &state, int sample);\n" + 
-                "#endif\n" 
+                "#define FRACTIONALBITS " + FRACTIONALBITS + "\n"
             );
         
         fdXC.print(
@@ -245,8 +234,9 @@ class MakeCoeffs {
                 "// First index is the dbLevel, in steps of " + stepdb + " db, first entry is " + mindb + " db\n" + 
                 "// Second index is the filter number - this filter has " + filterCnt + " banks\n" + 
                 "// Each structure instantiation contains the five coefficients for each biquad:\n" + 
-                "// -a1/a0, -a2/a0, b0/a0, b1/a0, b2/a0; all numbers are stored in 2.30 fixed point\n" + 
+                "// b0/a0, b1/a0, b2/a0, -a1/a0, -a2/a0; all numbers are stored in 2.30 fixed point\n" + 
                 "#include \"" + includeFile + "\"\n" + 
+                "#include \"biquadCascade.h\"\n" + 
                 "struct coeff biquads[DBS][BANKS] = {\n");
         thedb = 0;
         fdCSV.print("\"\",\"\",");        
