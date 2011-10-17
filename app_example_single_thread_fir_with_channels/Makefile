@@ -8,7 +8,7 @@ TARGET = XDK
 # not include the .xe postfix. If left blank the name will default to 
 # the project name
 
-APP_NAME = app_example_singel_fir
+APP_NAME = app_example_single_fir
 
 # The flags passed to xcc when building the application
 # You can also set the following to override flags for a particular language:
