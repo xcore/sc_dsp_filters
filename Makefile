@@ -40,7 +40,8 @@
 # This variable should contain a space separated list of all
 # the directories containing buildable applications (usually
 # prefixed with the app_ prefix)
-BUILD_SUBDIRS = app_example_biquad app_example_fir
+BUILD_SUBDIRS = app_example_biquad app_example_fir \
+                app_example_single_thread_fir_with_channels
 
 # This variable should contain a space separated list of all
 # the directories containing buildable plugins (usually
