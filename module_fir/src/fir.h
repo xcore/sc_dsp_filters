@@ -7,3 +7,5 @@
  **/
 
 extern int fir(int xn, int coeffs[], int state[], int ELEMENTS);
+extern int firAsm(int xn, int coeffs[], int state[], int ELEMENTS);
+extern void firASM_DoubleData_singleThread(streaming chanend c, int H[],int X[], unsigned size);
