@@ -74,7 +74,7 @@ out res[c],ynh
 ldaw Xoff,Xoff[-1];
 bu mainloop
 
-allDone:                          // Now just restore all registers and recieve control tokens.
+allDone:                          // Now just restore all registers and receive control tokens.
     inct  r4, res[c];
     ldw   r4, sp[0]
     ldw   r5, sp[1]
