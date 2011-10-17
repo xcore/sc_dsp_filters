@@ -3,16 +3,18 @@
  *
  *  Created on: 14 okt 2011
  *      Author: Mikael Bohman
- */
-//FIR filter using a channel as Inut and Ouput running on 1 trhrad. Uses the double data method and Q8.24
-
+ *
+ *
+ *FIR filtering using a channel as Input and Output running on 1 trhrad.
+ *Uses the double data method and Q8.24
+*/
 #include <platform.h>
 #include <print.h>
 #include <xs1.h>
 #include <fir.h>
 
 #define sec XS1_TIMER_HZ
-#define ntaps 3000			   //Number of FIT filter taps
+#define ntaps 3000			   //Number of FIR filter taps
 #define POLYNOMIAL 0xEDB88320  //Used for crc32 checksum
 
 
