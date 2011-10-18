@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Using Biquad filters &mdash; DSP filtering v0v1 documentation</title>
+    <title>module_cascading_biquad &mdash; DSP filtering v0v1 documentation</title>
     <link rel="stylesheet" href="_static/xdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -59,20 +59,259 @@ document.getElementById('d1').style.height=h2 + "px";
 </div>
 
             
-  <div class="section" id="using-biquad-filters">
-<h1>Using Biquad filters<a class="headerlink" href="#using-biquad-filters" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-cascading-biquad">
+<h1>module_cascading_biquad<a class="headerlink" href="#module-cascading-biquad" title="Permalink to this headline">¶</a></h1>
 <p>The biquad library provides a cascade of biquad filters, each performing a
 specific filter operation. A typical use is to get one filter to perform a
 low shelf (bass boost), one filter to perform a high shelf gain (treble
 boost) and a number of filters to boost specific bands. Put in series, this
-implements a graphics equaliser.</p>
-<p>To use a Biquad filter you need to (1) compute a set of Biquad coefficients and
-(2) insert these coefficients in the source code and call the Biquad function
-to perform a Biquad.</p>
+implements a &#8220;graphical equaliser&#8221;.</p>
+<p>In general filters can be static (for example, a low shelf 400 Hz filter at
++20dB to create bass boost), or dynamic (for example a low shelf 400 Hz
+filter at anything between -20 and +20 dB). The current code base assumes
+that filters are dynamic, and that there is a precomputed table of
+coefficients for all filter for all possible dB values. This enables the
+filter to gradually change coefficients when a new dB value is desired. It
+is simple to remove the code that reacts to responses in the dB value and
+that just uses a single static dB value for each filter.</p>
+<p>The module is optimised for performance, and assumes that there is a series
+of channels that will all be filtered using the same table of coefficients
+and dB values, but with separate dB settings for separate channels.</p>
+<p>The rest of this section explain the two parts that this module comprises.
+We first document the way to use the module to filter data, <em>assuming that
+there is a set of coefficients</em>. In order to compute the coefficients, you
+can call a provided java program, or you can provide your own coefficients.
+Note that the number of banks, the number of dB levels, and the
+representations of the numbers are all compile-time constants.</p>
+<div class="section" id="api">
+<h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="configuration-defines">
+<h3>Configuration Defines<a class="headerlink" href="#configuration-defines" title="Permalink to this headline">¶</a></h3>
+<p>The file <tt class="docutils literal"><span class="pre">coefficients.h</span></tt> must be provided in the application source
+code. This file must set the following <tt class="docutils literal"><span class="pre">#define</span></tt> s:</p>
+<p><strong>BANKS</strong></p>
+<blockquote>
+<div>This define sets the number of banks on which the cascaded biquad will
+operate. It is compiled into the binary and is not a parameter. It also
+governs the size of the biquadState and coefficients defined below.</div></blockquote>
+<p><strong>DBS</strong></p>
+<blockquote>
+<div>This define sets the number of dB levels that are provided by the
+coefficient tables. The dB values supported are entirely up to the
+user. Whenever a dB value is to be provided (eg, to initBiquads()) then
+a value in the range [0..DBS-1] is to be provided which is used as a
+lookup in the coefficients table.</div></blockquote>
+<p><strong>FRACTIONALBITS</strong></p>
+<blockquote>
+<div>This define sets the number of bits in the fractional part of
+fixed point numbers used to represent samples and coefficients.
+the number 1 is represented as <tt class="docutils literal"><span class="pre">1</span> <span class="pre">&lt;&lt;</span> <span class="pre">FRACTIONALBITS</span></tt>, -1 is represented
+as <tt class="docutils literal"><span class="pre">-1</span> <span class="pre">&lt;&lt;</span> <span class="pre">FRACTIONALBITS</span></tt>.</div></blockquote>
+</div>
+<div class="section" id="types">
+<h3>Types<a class="headerlink" href="#types" title="Permalink to this headline">¶</a></h3>
+<dt><dl class="type">
+<dt id="biquadState">
+<tt class="descname">biquadState</tt><a class="headerlink" href="#biquadState" title="Permalink to this definition">¶</a></dt>
+<dd><p>This structure defines the state that is required to compute a series of biquads on a channel.</p>
+<p>It holds both data that is used internally, and data that is accessible to the end user. One of these structures mus be declared for each channel of samples that is to be filtered independently.</p>
+<p><strong>Structure Members</strong>:</p>
+<dl class="member">
+<dt id="biquadState.b">
+struct oneBank <tt class="descname">b</tt><a class="headerlink" href="#biquadState.b" title="Permalink to this definition">¶</a></dt>
+<dd><p>data that holds intermediate values for biquad computation.</p>
+<p>Internal use only, do not modify</p>
+</dd></dl>
+
+<dl class="member">
+<dt id="biquadState.adjustDelay">
+int <tt class="descname">adjustDelay</tt><a class="headerlink" href="#biquadState.adjustDelay" title="Permalink to this definition">¶</a></dt>
+<dd><p>variable that holds the amount of time until the next time that the db values are to be adjusted.</p>
+<p>Internal use only.</p>
+</dd></dl>
+
+<dl class="member">
+<dt id="biquadState.adjustCounter">
+int <tt class="descname">adjustCounter</tt><a class="headerlink" href="#biquadState.adjustCounter" title="Permalink to this definition">¶</a></dt>
+<dd><p>variable that holds the index of the filter bank to be adjusted next.</p>
+<p>Internal use only.</p>
+</dd></dl>
+
+<dl class="member">
+<dt id="biquadState.desiredDb">
+int <tt class="descname">desiredDb</tt><a class="headerlink" href="#biquadState.desiredDb" title="Permalink to this definition">¶</a></dt>
+<dd><p>variable that holds the <em>desired</em> dB value for each bank in the filter.</p>
+<p>This array can be modified at any time, but changes will only take effect slowly in order to prevent the filter from becoming instable.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dt><dl class="type">
+<dt id="coeff">
+<tt class="descname">coeff</tt><a class="headerlink" href="#coeff" title="Permalink to this definition">¶</a></dt>
+<dd><p>This structure holds the coefficient values for one particular filter configuration ,for example the filter settings for a 400 Hz low-shelf filter at -10 dB.</p>
+<p>The values stored are fixed point values (as defined by <em>FRACTIONALBITS</em>) and are all normalised against the value of <tt class="docutils literal"><span class="pre">a0</span></tt>. The five values represent the normal values for a biquad filter (see for example the DSP cookbook), ie, b0 is multiplied by the current sample value and should have been pre-divided by a0.</p>
+<p><strong>Structure Members</strong>:</p>
+<dl class="member">
+<dt id="coeff.b0">
+int <tt class="descname">b0</tt><a class="headerlink" href="#coeff.b0" title="Permalink to this definition">¶</a></dt>
+<dd><p>b0/a0 value, in fixed point representation</p>
+</dd></dl>
+
+<dl class="member">
+<dt id="coeff.b1">
+int <tt class="descname">b1</tt><a class="headerlink" href="#coeff.b1" title="Permalink to this definition">¶</a></dt>
+<dd><p>b1/a0 value, in fixed point representation</p>
+</dd></dl>
+
+<dl class="member">
+<dt id="coeff.b2">
+int <tt class="descname">b2</tt><a class="headerlink" href="#coeff.b2" title="Permalink to this definition">¶</a></dt>
+<dd><p>b2/a0 value, in fixed point representation</p>
+</dd></dl>
+
+<dl class="member">
+<dt id="coeff.a1">
+int <tt class="descname">a1</tt><a class="headerlink" href="#coeff.a1" title="Permalink to this definition">¶</a></dt>
+<dd><p>a1/a0 value, in fixed point representation</p>
+</dd></dl>
+
+<dl class="member">
+<dt id="coeff.a2">
+int <tt class="descname">a2</tt><a class="headerlink" href="#coeff.a2" title="Permalink to this definition">¶</a></dt>
+<dd><p>a2/a0 value, in fixed point representation</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="global-constants">
+<h3>Global constants<a class="headerlink" href="#global-constants" title="Permalink to this headline">¶</a></h3>
+<p><strong>extern struct coeff biquads[DBS][BANKS]</strong></p>
+<blockquote>
+<div><p>This array should hold the values of all coefficients that are to be
+used. It comprises <em>DBS</em> rows of <em>BANKS</em> columns: each element holds a
+set of biquad coefficient for one bank for one particular dB setting.
+The coefficients should not be changed on-the-fly, because that may
+cause the filters to become unstable. They can be changed safely prior
+to calling initBiquads().</p>
+<p>This module assumes that all channels use the same coefficients, but
+each channel may have different db Settings per filter. That means,
+that all channels will use the same number of filters, the same corner
+frequencies, and the same number of dB levels. Channels can have their
+own dB setting per filter. Subsequent dB steps shoudl be small (1-2 dB)
+if audible clicks are to be prevented when changing the filter
+settings.</p>
+</div></blockquote>
+</div>
+<div class="section" id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
+<dt><dl class="function">
+<dt id="initBiquads">
+void <tt class="descname">initBiquads</tt><big>(</big><a class="reference internal" href="#biquadState" title="biquadState">biquadState</a><em>&nbsp;&amp;state</em>, int<em>&nbsp;zeroDb</em><big>)</big><a class="headerlink" href="#initBiquads" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function must be called prior to using the biquadCascade, for every single channel on which the biquads are to operate.</p>
+<p>The state variable is initialised with the value held in zeroDb, which should be an index into the array of coefficients (typically you want it to be the index at the array which holds the coefficient values for 0db).</p>
+<p>For example, if you have an array of 11 coefficients which are values from -24db to 6db in steps of 3db, and you have two channels that you both want to initialise at 0db, then you need to declare two variables of type biquadState, and call initBiquads for each of those variables with the value 8 for zeroDb</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>state</strong> &#8211; variable that holds the state for a channel. This includes previous samples, intermediate results, current db level, and desired db levels.</li>
+<li><strong>zeroDb</strong> &#8211; initial index into the coefficient array for all banks for this channel</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dt><dl class="function">
+<dt id="biquadCascade">
+int <tt class="descname">biquadCascade</tt><big>(</big><a class="reference internal" href="#biquadState" title="biquadState">biquadState</a><em>&nbsp;&amp;state</em>, int<em>&nbsp;xn</em><big>)</big><a class="headerlink" href="#biquadCascade" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function performs a series of biquad operations in sequence on a singe sample value, and returns the filtered sample value.</p>
+<p>The state variable stores the previous values of the stream and intermediate values in order to implement an IIR filter. The number of banks and the number of possible steps for the filter banks are hard coded in a file called &#8216;coefficients.h&#8217; and are to be supplied by the user.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>state</strong> &#8211; variable that holds the state for a channel. This includes previous samples, intermediate results, current db level, and desired db levels. By changing the value state.desiredDb to a new level, the filter settings can be changed.</li>
+<li><strong>xn</strong> &#8211; value to be filtered in fixed point format. Results that do not fit are clipped to the maximum positive and negative values. Input values should nominally be in the range [-1..+1] leaving headroom for intermediate results.</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Filtered value in fixed point format.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="example">
+<h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
+<p>The coefficients and include file can be generated for you (see the next
+section), but an example <tt class="docutils literal"><span class="pre">coefficients.h</span></tt> file is:</p>
+<div class="highlight-none"><div class="highlight"><pre>#define BANKS 2
+#define DBS 3
+#define FRACTIONALBITS 27
+</pre></div>
+</div>
+<p>This file states that we want to cascade two biquad filters, each filter
+has three possible dB settings, and all numbers are represented in 5.27
+format; that is, there are 27 bits behind the fixed point, and a sign bit
+with four bits before the fixed point. Hence, 0x08000000 represents +1 and
+0xF7000000 represents -1. Increments of 1 represent increments in 2^-27.
+The range of numbers that can be represented is [-16..16).</p>
+<p>The coefficient array needs to be defined, for example as follows:</p>
+<div class="highlight-none"><div class="highlight"><pre>struct coeff biquads[DBS][BANKS] = {
+  {
+    {133860500, -261873323, 128137849, 261857137, -127796807},
+    {111128665, -137894758,  50929490, 176727474,  -66673143}
+  },
+  {
+    {134217728, -262224926, 128147672, 262224926, -128147672},
+    {134217728, -171749357,  64101347, 171749357,  -64101347}
+  },
+  {
+    {134575909, -262555944, 128137853, 262572173, -128479804},
+    {162103977, -213445919,  80525738, 166544979,  -61511046}
+  }
+};
+</pre></div>
+</div>
+<p>The first number, 133860500, represents 0.997338443994522, and is the value
+of b1/a0 for filter bank 0 db setting 0. Each row represents one of three
+possible dB settings. In this example, we have chosen the dB settings -2
+dB, 0 dB, and +2 dB.</p>
+<p>To filter two channels we declare two state variables that are both
+initialised to use the middle dB index (1) which represents 0 dB:</p>
+<div class="highlight-none"><div class="highlight"><pre>biquadState leftState, rightState;
+
+initBiquads(leftState, 1);
+initBiquads(rightState, 1);
+</pre></div>
+</div>
+<p>After this samples can be filtered by calling biquadCascade():</p>
+<div class="highlight-none"><div class="highlight"><pre>filteredLeftSample = biquadCascade(leftState, leftSample);
+filteredRightSample = biquadCascade(rightState, rightSample);
+</pre></div>
+</div>
+<p>To change the left filter bank to use a dB index of 2 for bank 0, set the
+desiredDb value as follows:</p>
+<div class="highlight-none"><div class="highlight"><pre>leftState.desiredDb[0] = 2;
+</pre></div>
+</div>
+<p>This will take effect over a period of time.</p>
+</div>
+</div>
 <div class="section" id="computing-biquad-coefficients">
 <h2>Computing Biquad coefficients<a class="headerlink" href="#computing-biquad-coefficients" title="Permalink to this headline">¶</a></h2>
-<p>The program to compute the filter coefficients is in build_biquad_coefficients
-directory. It accepts the following options:</p>
+<p>Computing biquad coefficients is an science, and coefficients are the special
+sauce that many designers add. This module provides a java program that uses a
+public domain algorithm to compute biquad coefficients. This program is in
+the build_biquad_coefficients directory. It accepts the following options:</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="23%" />
@@ -119,44 +358,23 @@ directory. It accepts the following options:</p>
 </tr>
 </tbody>
 </table>
-<p>At least one of -low, -high, -bp, or -bs must be specified. The program builds a set
-of biquad coefficients for each filter. For each biquad it generates a
-table for each dB gain level, from min to max in the given number of steps.
-Example calls are:</p>
+<p>At least one of -low, -high, -bp, or -bs must be specified. The program
+builds both the <tt class="docutils literal"><span class="pre">coeffs.h</span></tt> file that defines the number of banks, db
+levels, and precision, and a <tt class="docutils literal"><span class="pre">coeffs.xc</span></tt> file that contains the
+coefficients array <tt class="docutils literal"><span class="pre">biquads</span></tt>. For each filter (-low, -high, -peaking) the
+program generates a set of coefficients for each dB gain level, from min to
+max in the given number of steps. It can, for example, be invoked as follows:</p>
 <div class="highlight-none"><div class="highlight"><pre>-min -20 -max 20 -step 4 -low 250 -high 4000
--low 400 -peaking 800 1 -peaking 1600 1 -high 3200
 </pre></div>
 </div>
-<p>The program outputs an include file, a source code file that initialises the coefficients
-table, and a CSV file that contains the response curves. The curves are calculated using
-maths from <a class="reference external" href="http://groups.google.com/group/comp.dsp/browse_frm/thread/8c0fa8d396aeb444/a1bc5b63ac56b686">http://groups.google.com/group/comp.dsp/browse_frm/thread/8c0fa8d396aeb444/a1bc5b63ac56b686</a></p>
-</div>
-<div class="section" id="calling-biquad">
-<h2>Calling Biquad<a class="headerlink" href="#calling-biquad" title="Permalink to this headline">¶</a></h2>
-<p>The function that performs the run time fir is in module_cascading_biquad. Include the
-generated include file and call:</p>
-<div class="highlight-none"><div class="highlight"><pre>filteredSample = biquadCascade(state, sampleValue);
-</pre></div>
-</div>
-<p>sampleValue should be a 8.24 fixed point number, and the function returns
-the filtered 8.24 value. The variable state holds the state of all biquads,
-it has to be initialised as follows:</p>
-<div class="highlight-none"><div class="highlight"><pre>initBiquads(state, zeroDb);
-</pre></div>
-</div>
-<p>Where zeroDb is the index into the db table that is 0 dB, 20 in the default
-setting (from -20 db in steps of 1 db), or (-min/steps) in the general
-case.</p>
-<p>When biqaudCascade is called the sample is subjected to each biquad in
-turn. Initially each biquad filter is set to a 0 dB gain (ie, no change). Between
-calls to biquadCascade, the code can change the desiredDb array in the
-state variable. This array holds the gain for each biquad, expressed as an
-array index: 0 is the minimal gain, and (max-min)/steps is the maximal
-gain. Ie, if you have a low-shelf, three peakingEq and a high-shelf biquad,
-then the desiredDb array has five elements referring to the filters that
-were specified on the command line. The biquadCascade function will slowly
-adjust the gain level of each filter to match the desiredDb, enabling a
-click-free transition.</p>
+<p>This generates a table with 11 Db values (-20, -16, -12, -8, -4, 0, 4, 8,
+12, 16, 20) and two filters. Filter 0 is a low frequency filter with a
+corner frequency of 250 Hz, the latter is a high frequency filter with a
+corner frequency of 4000 Hz, assuming a 48 KHz sample frequency. All
+coefficients will be represented in the default 8.24 representation.</p>
+<p>The program also generates a CSV file that contains the response curves.
+The curves are calculated using maths from
+<a class="reference external" href="http://groups.google.com/group/comp.dsp/browse_frm/thread/8c0fa8d396aeb444/a1bc5b63ac56b686">http://groups.google.com/group/comp.dsp/browse_frm/thread/8c0fa8d396aeb444/a1bc5b63ac56b686</a></p>
 </div>
 </div>
 
@@ -169,13 +387,19 @@ click-free transition.</p>
         <div class="sphinxsidebarwrapper">
 <h3><a href="index.html">DSP filtering (0v1)</a></h3>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="">Using Biquad filters</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="">module_cascading_biquad</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#api">API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#configuration-defines">Configuration Defines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#types">Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#global-constants">Global constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#computing-biquad-coefficients">Computing Biquad coefficients</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#calling-biquad">Calling Biquad</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="fir.html">Using FIR filters</a></li>
-<li class="toctree-l1"><a class="reference internal" href="summary.html">DSP Filtering</a></li>
 </ul>
 
 <div id="searchbox" style="display: none;margin-bottom: 10px;">
