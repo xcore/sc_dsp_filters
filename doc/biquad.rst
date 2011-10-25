@@ -67,7 +67,23 @@ Types
 Global constants
 ''''''''''''''''
 
-.. doxygenvariable:: biquads
+**extern struct coeff biquads[DBS][BANKS]**
+
+    This array should hold the values of all coefficients that are to be
+    used. It comprises *DBS* rows of *BANKS* columns: each element holds a
+    set of biquad coefficient for one bank for one particular dB setting.
+    The coefficients should not be changed on-the-fly, because that may
+    cause the filters to become unstable. They can be changed safely prior
+    to calling initBiquads().
+
+    This module assumes that all channels use the same coefficients, but
+    each channel may have different db Settings per filter. That means,
+    that all channels will use the same number of filters, the same corner
+    frequencies, and the same number of dB levels. Channels can have their
+    own dB setting per filter. Subsequent dB steps shoudl be small (1-2 dB)
+    if audible clicks are to be prevented when changing the filter
+    settings.
+
            
 Functions
 '''''''''
