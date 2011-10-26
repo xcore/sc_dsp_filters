@@ -2,6 +2,7 @@
 // This software is freely distributable under a derivative of the
 // University of Illinois/NCSA Open Source License posted in
 // LICENSE.txt and at <http://github.xcore.com/>
+
 //extern void firASM_DoubleData_multiThread(streaming chanend c, int H[],int X[], unsigned size);
 
 #define NWORDS 7
@@ -30,7 +31,6 @@ firASM_DoubleData_multiThread:
     stw   r7, sp[3]
     stw   r8, sp[4]
     stw   r9, sp[5]
-	ldaw Xm,X[size]
     stw   r10, sp[6]
 
 mainloop:

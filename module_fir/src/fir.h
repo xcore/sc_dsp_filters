@@ -12,4 +12,4 @@ int fir(int xn, int coeffs[], int state[], int ELEMENTS);
 extern int firAsm(int xn, int coeffs[], int state[], int ELEMENTS);
 extern void firASM_DoubleData_multiThread(streaming chanend c, int hPtr,int xPtr, unsigned size);
 extern void firASM_DoubleData_singleThread(streaming chanend c, int H[],int X[], unsigned size);
-int fir_Multithreading(streaming chanend c, int h[],int x[],unsigned ntaps);
+void fir_Multithreading(streaming chanend c, int h[],int x[],unsigned ntaps);

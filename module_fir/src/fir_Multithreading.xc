@@ -8,59 +8,77 @@
 #include <print.h>
 
 #define LDAW(ptrout,ptrin,offset) asm("ldaw %0,%1[%2]": "=r"(ptrout) : "r"(ptrin) ,"r"(offset))
-
-int distribute(streaming chanend c, streaming chanend cd[4], int x[],
-		unsigned ntaps) {
+#define CAST(ptrout,ptrin) asm("add %0,%1,0": "=r"(ptrout):"r"(ptrin))
+void distribute(streaming chanend c, streaming chanend c0,
+		streaming chanend c1, streaming chanend c2, streaming chanend c3,
+		int x[], unsigned ntaps) {
 	int hi, addhi, state = 0;
 	unsigned lo, addlo;
-	int samples;
 	while (1) {
 		if (stestct(c)) {
 			sinct(c);
-			for (int i = 0; i < THREADS; i++)
-				soutct(cd[i], 10);
-			c:>samples;
-			return samples;
-		}
-		else {
+			soutct(c0, 10); //Kill all dist. threads
+			soutct(c1, 10); //Kill all dist. threads
+			soutct(c2, 10); //Kill all dist. threads
+			soutct(c3, 10); //Kill all dist. threads
+			break;
+		} else {
 			c:>x[state];
 			x[state+ntaps]=state;
-#pragma loop unroll
-			for(int i=0;i<THREADS;i++)
-			cd[i]<:state;
+			/*#pragma loop unroll
+			 for(int i=0;i<THREADS;i++)
+			 cd[i]<:state;*/
 			state--;
 			if(state<0)
-			state+=ntaps;
-			cd[0]:>lo;
-			cd[0]:>hi;
-#pragma loop unroll
-			for(int i=1;i<THREADS;i++) {
-				cd[i]:>addlo;
-				{	hi,lo}=mac(1,addlo,hi,lo);
-			}
-#pragma loop unroll
-			for(int i=1;i<THREADS;i++) {
-				cd[i]:>addhi;
-				hi+=addhi;
-			}
+				state+=ntaps;
+
+			c0<:state+ntaps;
+			c1<:state+ntaps;
+			c2<:state+ntaps;
+			c3<:state+ntaps; /* TEMP. solution */
+
+
+
+
+			c0:>lo;
+			c0:>hi;
+			/*#pragma loop unroll
+			 for(int i=1;i<THREADS;i++) {
+			 cd[i]:>addlo;
+			 {	hi,lo}=mac(1,addlo,hi,lo);
+			 }*/
+			/* TEMP. solution */
+			c1:>addlo; {hi,lo}=mac(1,addlo,hi,lo);
+			c2:>addlo; {hi,lo}=mac(1,addlo,hi,lo);
+			c3:>addlo; {hi,lo}=mac(1,addlo,hi,lo);
+
+			/*#pragma loop unroll
+			 for(int i=1;i<THREADS;i++) {
+			 cd[i]:>addhi;
+			 hi+=addhi;
+			 }*/
+			/* TEMP. solution */
+			c1:>addhi;hi+=addhi;
+			c2:>addhi;hi+=addhi;
+			c3:>addhi;hi+=addhi;
+
 			c<: hi<<8 | lo>>24;
 		}
 	}
-	return -1;
 }
 
-int fir_Multithreading(streaming chanend c, int h[], int x[], unsigned ntaps) {
-	streaming chan cd[THREADS];
+void fir_Multithreading(streaming chanend c, int h[], int x[], unsigned ntaps) {
+	streaming chan c0, c1, c2, c3; // Temp solution - awating compiler update to handle arrays of chan outside main()
 	int hPtr[THREADS], xPtr[THREADS]; //Pointers to h,x
-	int samples;
 	for (int i = 0; i < THREADS; i++) {
-LDAW		(hPtr[i],h,i*ntaps/THREADS);
+		LDAW(hPtr[i],h,i*ntaps/THREADS);
 		LDAW(xPtr[i],x,i*ntaps/THREADS);
 	}
-	par {samples=distribute(c,cd,x,ntaps);
-		par(int t=0; t< THREADS;t++) {firASM_DoubleData_multiThread(cd[t],xPtr[t],hPtr[t],ntaps);}
-		}
-	printstrln("\nFiltering Done"); //test only
-	return samples;
+	par {distribute(c,c0,c1,c2,c3,x,ntaps);
+		firASM_DoubleData_multiThread(c0,xPtr[0],hPtr[0],ntaps/THREADS);
+		firASM_DoubleData_multiThread(c1,xPtr[1],hPtr[1],ntaps/THREADS);
+		firASM_DoubleData_multiThread(c2,xPtr[2],hPtr[2],ntaps/THREADS);
+		firASM_DoubleData_multiThread(c3,xPtr[3],hPtr[3],ntaps/THREADS);
+	}
 }
 
