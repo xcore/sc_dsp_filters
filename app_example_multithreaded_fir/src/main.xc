@@ -10,7 +10,7 @@
  *      Author: Mikael Bohman
  *
  *
- *FIR filtering using a channel as Input and Output running on one thread.
+ *FIR filtering using a channel as Input and Output for data, running on several distributed threads.
  *Uses the double data method and Q8.24
  */
 #include <platform.h>
