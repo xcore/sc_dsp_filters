@@ -5,7 +5,6 @@
 //
 #include <xs1.h>
 #include "fir.h"
-//#include <stdio.h>
 
 #define LDAW(ptrout,ptrin,offset) asm("ldaw %0,%1[%2]": "=r"(ptrout) : "r"(ptrin) ,"r"(offset))
 #define CAST(ptrout,ptrin) asm("add %0,%1,0": "=r"(ptrout):"r"(ptrin))
@@ -66,9 +65,12 @@ void distribute(streaming chanend c, streaming chanend cd[THREADS],int x[], unsi
 	}
 }
 
-void fir_Multithreading(streaming chanend c, int h[], int x[], unsigned ntaps) {
+int fir_Multithreading(streaming chanend c, int h[], int x[], unsigned ntaps) {
 	streaming chan cd[THREADS];
 	int hPtr[THREADS], xPtr[THREADS]; //Pointers to h,x
+	if(ntaps%THREADS!=0){
+		return -1;
+	}
 	for (int i = 0; i < THREADS; i++) {
 		LDAW(hPtr[i],h,i*ntaps/THREADS);
 		LDAW(xPtr[i],x,i*ntaps/THREADS);
@@ -84,5 +86,6 @@ void fir_Multithreading(streaming chanend c, int h[], int x[], unsigned ntaps) {
 				disconnect(cd, THREADS);
 				disconnect(cd, THREADS);
 			}
+return 0;
 }
 

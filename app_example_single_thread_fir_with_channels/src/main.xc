@@ -29,7 +29,9 @@ int test_performance(streaming chanend c) {
 	int time;
 	unsigned crc = 0;
 	int ans = 0, i = 1;
-	printstrln("Testing performance, Running FIR-filter for 1 sec on a single thread with 3000 filter taps");
+	printstrln("Testing performance, Running FIR-filter for 1 sec on a single thread with");
+	printint(ntaps);
+	printstrln(" filter taps");
 	t:> time;
 	c<:i; //Send first sample directly after the timing started
 	time+=sec;

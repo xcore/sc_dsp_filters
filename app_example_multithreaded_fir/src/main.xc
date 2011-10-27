@@ -26,7 +26,9 @@ int test_performance(streaming chanend c) {
 	int time;
 	unsigned crc = 0;
 	int ans = 0, i = 1;
-	printstrln("Testing performance, Running FIR-filter for 1 sec on a single thread with 3000 filter taps");
+	printstr("Testing performance, Running FIR-filter for 1 sec on multithreaded solution with ");
+	printint(ntaps);
+	printstrln(" filter taps");
 	t:> time;
 	c<:i; //Send first sample directly after the timing started
 	time+=sec;
@@ -69,6 +71,7 @@ int main() {
 			int x[2 * ntaps];
 			int samples,ans;
 			unsigned crc=0;
+			int error;
 			if(THREADS!=4){
 				printstrln("WARNING: At the moment this code does only support 4 threads\n Forcing to 4 threads\n Will be change in future relases");
 #undef TREADS
@@ -79,7 +82,11 @@ int main() {
 				x[i] = 0; //reset the filter state
 				x[i + ntaps] = 0; //reset the filter state
 			}
-			fir_Multithreading(c, h, x, ntaps);
+			error=fir_Multithreading(c, h, x, ntaps);
+			if(error==-1)
+				printstr("\t\t\t!ERROR!\nThe length of the filter must be a multiple of 'THREADS'\n"
+						"********************************************************\n");
+			else{
 			c:>samples;
 
 			/**** TESTING PURPOSE ONLY ****/
@@ -92,6 +99,7 @@ int main() {
 			}
 			printstr("Correct Checksum for filtered datasequence is: 0x");
 			printhex(crc);
+			}
 
 		}on stdcore[1]:
 		test_performance(c);
