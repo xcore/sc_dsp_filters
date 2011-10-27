@@ -21,19 +21,47 @@ void distribute(streaming chanend c, streaming chanend cd[THREADS],int x[], unsi
 	int hi, addhi;
 	unsigned lo, addlo;
 	int state=ntaps-1;
+	c:>x[0];
+	x[ntaps]=x[0];
+#pragma loop unroll
+	for(int i=0;i<THREADS;i++)
+	cd[i]<:state;
+
 	while (1) {
 		if (stestct(c)) {
 			sinct(c);
+			cd[0]:>lo; //Collect last sample in channel buffer
+			cd[0]:>hi;
+
+			#pragma loop unroll
+			 for(int i=1;i<THREADS;i++) {
+			 cd[i]:>addlo;
+			   {hi,lo}=mac(1,addlo,hi,lo);
+			 }
+
+			#pragma loop unroll
+			 for(int i=1;i<THREADS;i++) {
+				 cd[i]:>addhi;
+				 hi+=addhi;
+			 }
+			 if (sext(hi,24) == hi)
+			       c<:hi << 8 | lo >> 24;
+			     else if (hi < 0)
+			       c<: 0x80000000;
+			     else
+			        c<: 0x7fffffff;
+
 			for(int i=0;i<THREADS;i++)
 				soutct(cd[i], 10); //Kill all dist. threads
 				break;
 		} else {
 			c:>x[state];
 			x[state+ntaps]=x[state];
-			state--;
-			if(state<0)
-			 state+=ntaps;
 
+			if(state!=0)
+			 state--;
+			else
+			 state+=ntaps-1;
 
 			#pragma loop unroll
 			 for(int i=0;i<THREADS;i++)
@@ -59,8 +87,6 @@ void distribute(streaming chanend c, streaming chanend cd[THREADS],int x[], unsi
 			       c<: 0x80000000;
 			     else
 			        c<: 0x7fffffff;
-
-
 		}
 	}
 }

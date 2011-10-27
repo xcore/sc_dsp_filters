@@ -43,11 +43,10 @@ int test_performance(streaming chanend c) {
 			//printstr(", ");
 			break;
 			case t when timerafter (time) :> void:
-			c:>ans;
-			crc32(crc, ans, POLYNOMIAL);
 			soutct(c,10); //end FIR filter
-			//printint(ans);
-			//printstr("\nFiltered ");
+			c:>ans; //fetch last filtered number in channel buffer.
+			crc32(crc, ans, POLYNOMIAL);
+			printstr("\nFiltered ");
 			printint(i);
 			printstrln(" samples during 1 second");
 			printint(i*ntaps/1000);

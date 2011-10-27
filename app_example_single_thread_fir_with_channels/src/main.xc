@@ -44,9 +44,9 @@ int test_performance(streaming chanend c) {
 			crc32(crc, ans, POLYNOMIAL);
 			break;
 			case t when timerafter (time) :> void:
-			c:>ans;
-			crc32(crc, ans, POLYNOMIAL);
 			soutct(c,10); //end FIR thread
+			c:>ans; // Fetch last sample in channel buffer
+			crc32(crc, ans, POLYNOMIAL);
 			printstr("Filtered ");
 			printint(i);
 			printstrln(" samples during 1 second");
@@ -89,7 +89,6 @@ int main() {
 	}
 	printstr("Correct Checksum for filtered datasequence is: 0x");
 	printhex(crc);
-	while (1); // Program doesn't halt correctly ??
 
 return 0;
 }
