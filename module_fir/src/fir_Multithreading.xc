@@ -19,14 +19,9 @@ void disconnect(streaming chanend c[THREADS], unsigned size) {
 }
 
 void distribute(streaming chanend c, streaming chanend cd[THREADS],int x[], unsigned ntaps) {
-	int hi, addhi,state=0;
+	int hi, addhi;
 	unsigned lo, addlo;
-	/*int state=ntaps-1;
-	c :> x[0];
-	x[ntaps] = x[0];
-#pragma loop unroll
-	for(int i=0;i<THREADS;i++)
-			cd[i]<:state;*/
+	int state=ntaps-1;
 	while (1) {
 		if (stestct(c)) {
 			sinct(c);
@@ -45,8 +40,7 @@ void distribute(streaming chanend c, streaming chanend cd[THREADS],int x[], unsi
 			 for(int i=0;i<THREADS;i++)
 			 cd[i]<:state;
 
-
-			cd[0]:>lo;
+			 cd[0]:>lo;
 			cd[0]:>hi;
 
 			#pragma loop unroll
@@ -60,7 +54,13 @@ void distribute(streaming chanend c, streaming chanend cd[THREADS],int x[], unsi
 				 cd[i]:>addhi;
 				 hi+=addhi;
 			 }
-			c<: hi<<8 | lo>>24;
+			 if (sext(hi,24) == hi)
+			       c<:hi << 8 | lo >> 24;
+			     else if (hi < 0)
+			       c<: 0x80000000;
+			     else
+			        c<: 0x7fffffff;
+
 
 		}
 	}
@@ -69,8 +69,6 @@ void distribute(streaming chanend c, streaming chanend cd[THREADS],int x[], unsi
 void fir_Multithreading(streaming chanend c, int h[], int x[], unsigned ntaps) {
 	streaming chan cd[THREADS];
 	int hPtr[THREADS], xPtr[THREADS]; //Pointers to h,x
-	//CAST(hPtr[0],h);
-	//CAST(xPtr[0],x);
 	for (int i = 0; i < THREADS; i++) {
 		LDAW(hPtr[i],h,i*ntaps/THREADS);
 		LDAW(xPtr[i],x,i*ntaps/THREADS);
