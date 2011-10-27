@@ -38,6 +38,7 @@ add i,size,0  //reset i to sizeof vector
 testct r10,res[c]
 bt r10, allDone
 in state,res[c] // in state
+//sub state,state,1
 ldaw Xoff,X[state];  //change ??
 ldc ynl,0 //reset MAC
 ldc ynh,0 //reset MAC
