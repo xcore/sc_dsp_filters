@@ -1,47 +1,9 @@
-# This Makefile acts as a composite builder for all the elements 
-# of this repository.
-
-# It has target patterns for all, clean and test for sub-directories of the 
-# form dir.target e.g. calling:
-#
-# xmake app_uart_demo.all 
-#
-# will execute 'xmake all' in the app_uart_demo sub-directory.
-#
-# In addition the following targets are defined:
-#
-# all:
-#
-#    This target will build all the applications listed in the BUILD_SUBDIRS
-#    variable.
-#
-# plugins:
-# 
-#    This target will build all the plugins listed in the PLUGIN_SUBDIRS 
-#    variable
-#
-# clean:
-#    
-#    This target will clean all the applications listed in the BUILD_SUBDIRS
-#    variable.
-#
-# clean_plugins:
-#
-#    This target will clean all the plugins listed in the PLUGIN_SUBDIRS 
-#    variable.
-#
-# test:
-#
-#   This target will make the test make target in all the directories
-#   listed in TEST_SUBDIRS.
-#  
-
-
 # This variable should contain a space separated list of all
 # the directories containing buildable applications (usually
 # prefixed with the app_ prefix)
 BUILD_SUBDIRS = app_example_biquad app_example_fir \
-                app_example_single_thread_fir_with_channels
+                app_example_single_thread_fir_with_channels \
+				app_example_multithreaded_fir
 
 # This variable should contain a space separated list of all
 # the directories containing buildable plugins (usually
