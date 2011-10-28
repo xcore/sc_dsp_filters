@@ -1,2 +1,0 @@
-Directory to hold binaries and build objects.
-Must always be present since the response.csv file ends up here too.
