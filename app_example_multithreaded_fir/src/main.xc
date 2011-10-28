@@ -71,11 +71,6 @@ int main() {
 			int samples,ans;
 			unsigned crc=0;
 			int error;
-			if(THREADS!=4){
-				printstrln("WARNING: At the moment this code does only support 4 threads\n Forcing to 4 threads\n Will be change in future relases");
-#undef TREADS
-#define THREADS 4
-			}
 			for (int i = 0; i < ntaps; i++) {
 				h[i] = (i + 1) << 24; //h holds the filter taps
 				x[i] = 0; //reset the filter state

@@ -6,7 +6,7 @@
 /**
  **/
 
-#define THREADS 4				//Numbers of THREADS to use for distribution
+#define THREADS 4			//Numbers of THREADS to use for distribution, must be <=7, optimal = 4
 
 int fir(int xn, int coeffs[], int state[], int ELEMENTS);
 extern int firAsm(int xn, int coeffs[], int state[], int ELEMENTS);
