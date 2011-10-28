@@ -80,11 +80,12 @@ int fir_Multithreading(streaming chanend c, int h[], int x[], unsigned ntaps) {
     }
     par {
         distribute(c,cd,x,ntaps);
-        firASM_DoubleData_multiThread(cd[0],hPtr[0],xPtr[0],ntaps/THREADS);
-        firASM_DoubleData_multiThread(cd[1],hPtr[1],xPtr[1],ntaps/THREADS);
-        firASM_DoubleData_multiThread(cd[2],hPtr[2],xPtr[2],ntaps/THREADS);
-        firASM_DoubleData_multiThread(cd[3],hPtr[3],xPtr[3],ntaps/THREADS);
+        par(int i=0;i<THREADS;i++){firASM_DoubleData_multiThread(cd[i],hPtr[i],xPtr[i],ntaps/THREADS);}
     }
+    par {// Compiler workaround for XDE 11.2
+       asm("" : : "r"(cd));
+       asm("" : : "r"(cd));
+     }
     par{  // Compiler workaround for XDE 11.2
         disconnect(cd, THREADS);
         disconnect(cd, THREADS);
