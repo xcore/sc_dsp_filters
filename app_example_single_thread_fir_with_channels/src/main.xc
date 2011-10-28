@@ -29,7 +29,9 @@ int test_performance(streaming chanend c) {
 	int time;
 	unsigned crc = 0;
 	int ans = 0, i = 1;
-	printstrln("Testing performance, Running FIR-filter for 1 sec on a single thread with 3000 filter taps");
+	printstrln("Testing performance, Running FIR-filter for 1 sec on a single thread with");
+	printint(ntaps);
+	printstrln(" filter taps");
 	t:> time;
 	c<:i; //Send first sample directly after the timing started
 	time+=sec;
@@ -42,6 +44,9 @@ int test_performance(streaming chanend c) {
 			crc32(crc, ans, POLYNOMIAL);
 			break;
 			case t when timerafter (time) :> void:
+			soutct(c,10); //end FIR thread
+			c:>ans; // Fetch last sample in channel buffer
+			crc32(crc, ans, POLYNOMIAL);
 			printstr("Filtered ");
 			printint(i);
 			printstrln(" samples during 1 second");
@@ -49,7 +54,6 @@ int test_performance(streaming chanend c) {
 			printstrln(" kTaps per sec.");
 			printstr("CRC32 checksum for all filtered samples was: 0x");
 			printhex(crc);
-			soutct(c,10); //end FIR thread
 			return i;
 		}
 	}
@@ -79,13 +83,12 @@ int main() {
 	}
 	printstrln(
 			"\nCalculating the CRC32 checksum from the XC implementation, this might take some time");
-	for (int i = 1; i < samples; i++) {
+	for (int i = 1; i <= samples; i++) {
 		ans = fir(i, h, x, ntaps);
 		crc32(crc, ans, POLYNOMIAL);
 	}
 	printstr("Correct Checksum for filtered datasequence is: 0x");
 	printhex(crc);
-	while (1); // Program doesn't halt correctly ??
 
 return 0;
 }
