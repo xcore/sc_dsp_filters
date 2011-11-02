@@ -1,4 +1,4 @@
-*/.build_*/*
+*/.build*/*
 */bin/*
 *.o
 *.xe
@@ -11,10 +11,7 @@ app_example_biquad/MakeCoeffs$F.class
 app_example_biquad/MakeCoeffs.class
 app_example_fir/MakeFIR.class
 doc/Doxyfile-e
+doc/.doxygen
+doc/.sources
+doc/index.pdf
 doc/_build/
-doc/dsp_filtering.aux
-doc/dsp_filtering.idx
-doc/dsp_filtering.log
-doc/dsp_filtering.out
-doc/dsp_filtering.pdf
-doc/dsp_filtering.tex
