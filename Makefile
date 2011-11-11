@@ -2,7 +2,7 @@
 # the directories containing buildable applications (usually
 # prefixed with the app_ prefix)
 BUILD_SUBDIRS = app_example_single_thread_fir \
-6	  	app_example_multithreaded_fir
+	  	app_example_multithreaded_fir
 
 # This variable should contain a space separated list of all
 # the directories containing buildable plugins (usually
