@@ -7,6 +7,7 @@
 
 #define LDAW(ptrout,ptrin,offset) asm("ldaw %0,%1[%2]": "=r"(ptrout) : "r"(ptrin) ,"r"(offset))
 #define CAST(ptrout,ptrin) asm("add %0,%1,0": "=r"(ptrout):"r"(ptrin))
+#define POLY 0xEDB88320   //Used for crc32 checksum
 
 
 int fir(int xn, int coeffs[], int state[], int ELEMENTS);
@@ -17,4 +18,6 @@ int fir_Multithreading2(streaming chanend c, int h[],int x[],unsigned ntaps);
 int fir_Multithreading3(streaming chanend c, int h[],int x[],unsigned ntaps);
 int fir_Multithreading4(streaming chanend c, int h[],int x[],unsigned ntaps);
 int fir_MultiCore(streaming chanend c,streaming chanend cdc[]);
+void calc_CRC(int h[],int x[],int ELEMENTS,unsigned samples);
+int test_performance(streaming chanend c, int ELEMENTS);
 void disconnect(streaming chanend c[], unsigned size);
