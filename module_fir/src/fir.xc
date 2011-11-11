@@ -31,3 +31,10 @@ int fir(int xn, int coeffs[], int state[], int ELEMENTS) {
     return ynh;
 }
 
+void disconnect(streaming chanend c[], unsigned size) {
+    for (unsigned i = 0; i < size; i++) {
+    //printf("\nKilling channel cd %d",i);
+        soutct(c[i], XS1_CT_END);
+        schkct(c[i], XS1_CT_END);
+    }
+}

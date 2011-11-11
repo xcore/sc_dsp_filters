@@ -2,15 +2,7 @@
 // This software is freely distributable under a derivative of the
 // University of Illinois/NCSA Open Source License posted in
 // LICENSE.txt and at <http://github.xcore.com/>
-
-/*
- * main.xc
- *
- *  Created on: 14 okt 2011
- *      Author: Mikael Bohman
- *
- *
- *FIR filtering using a channel as Input and Output for data, running on several distributed threads.
+/*FIR filtering using a channel as Input and Output for data, running on several distributed threads.
  *Uses the double data method and Q8.24
  */
 #include <platform.h>
@@ -19,15 +11,16 @@
 #include <fir.h>
 
 #define sec XS1_TIMER_HZ
-#define ntaps 3000			   //Number of FIR filter taps
+#define NTAPS 3000			   //Number of FIR filter taps
 #define POLYNOMIAL 0xEDB88320  //Used for crc32 checksum
+
 int test_performance(streaming chanend c) {
 	timer t;
 	int time;
 	unsigned crc = 0;
 	int ans = 0, i = 1;
 	printstr("Testing performance, Running FIR-filter for 1 sec on multithreaded solution with ");
-	printint(ntaps);
+	printint(NTAPS);
 	printstrln(" filter taps");
 	t:> time;
 	c<:i; //Send first sample directly after the timing started
@@ -49,7 +42,7 @@ int test_performance(streaming chanend c) {
 			printstr("\nFiltered ");
 			printint(i);
 			printstrln(" samples during 1 second");
-			printint(i*ntaps/1000);
+			printint(i*NTAPS/1000);
 			printstrln(" kTaps per sec.");
 			printstr("CRC32 checksum for all filtered samples was: 0x");
 			printhexln(crc);
@@ -60,23 +53,26 @@ int test_performance(streaming chanend c) {
 	return -1;
 }
 
+
+
+
 int main() {
 	streaming chan c;
 
 	par {
 		on stdcore[0]:
 		{
-			int h[ntaps];
-			int x[2 * ntaps];
+			int h[NTAPS];
+			int x[2 * NTAPS];
 			int samples,ans;
 			unsigned crc=0;
 			int error;
-			for (int i = 0; i < ntaps; i++) {
+			for (int i = 0; i < NTAPS; i++) {
 				h[i] = (i + 1) << 24; //h holds the filter taps
 				x[i] = 0; //reset the filter state
-				x[i + ntaps] = 0; //reset the filter state
+				x[i + NTAPS] = 0; //reset the filter state
 			}
-			error=fir_Multithreading(c, h, x, ntaps);
+			error=fir_Multithreading4(c, h, x, NTAPS);
 			if(error==-1)
 				printstr("\t\t\t!ERROR!\nThe length of the filter must be a multiple of 'THREADS'\n"
 						"********************************************************\n");
@@ -84,11 +80,11 @@ int main() {
 			c:>samples;
 
 			/**** TESTING PURPOSE ONLY ****/
-			for (int i = 0; i < 2*ntaps; i++)
+			for (int i = 0; i < 2*NTAPS; i++)
 				x[i] = 0; //reset the filter state
 			printstrln("Calculating the CRC32 checksum from the XC implementation, this might take some time");
 			for (int i = 1; i <= samples; i++) {
-				ans = fir(i, h, x, ntaps);
+				ans = fir(i, h, x, NTAPS);
 				crc32(crc, ans, POLYNOMIAL);
 			}
 			printstr("Correct Checksum for filtered datasequence is: 0x");
