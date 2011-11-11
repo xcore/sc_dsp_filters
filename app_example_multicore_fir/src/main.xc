@@ -2,17 +2,11 @@
 // This software is freely distributable under a derivative of the
 // University of Illinois/NCSA Open Source License posted in
 // LICENSE.txt and at <http://github.xcore.com/>
-
 /*
- * main.xc
- *
- *  Created on: 14 okt 2011
- *      Author: Mikael Bohman
- *
- *
- *FIR filtering using a channel as Input and Output for data, running on several distributed threads on several cores.
+ *FIR filtering using a channel as Input and Output for data, running on several distributed threads and on several cores.
  *Uses the double data method and Q8.24
  */
+
 #include <platform.h>
 #include <print.h>
 #include <xs1.h>
