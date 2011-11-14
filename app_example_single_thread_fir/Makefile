@@ -1,8 +1,8 @@
-TARGET = XDK
+TARGET = XC-1A
 
-APP_NAME = app_example_single_fir
+APP_NAME = 
 
-XCC_FLAGS = -O2
+XCC_FLAGS = -O2 -g
 
 USED_MODULES = module_fir
 
