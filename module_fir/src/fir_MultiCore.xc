@@ -12,7 +12,7 @@ int fir_MultiCore(streaming chanend c, streaming chanend cdc[], unsigned ntaps) 
 	int data, temp;
 	for(int i=0;i<ntaps;i++){
 			c:>temp;
-			cdc[3*i/ntaps]<:temp; // distribute h to several cores
+			cdc[CORES*i/ntaps]<:temp; // distribute h to several cores
 		}
 		schkct(c,9); // Check that all filter taps was sent
 		for(int i=0;i<CORES;i++)

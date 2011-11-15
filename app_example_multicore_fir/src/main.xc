@@ -30,6 +30,7 @@ int main() {
 			int samples;
 			int h[ntaps];
 			int x[2 * ntaps];
+			printstrln("!!! WARNING!!! This example does not yet calculate the correct answer for the FIR output, for FIR-performance analasis only");
 			par{
 				fir_MultiCore(c, cdc, ntaps);
 				samples=test_performance(c, ntaps);

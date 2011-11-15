@@ -63,8 +63,7 @@ int test_performance(streaming chanend c,int ELEMENTS){
 	for(int i=0;i<ELEMENTS;i++)
 		c<: (i + 1) << 24; // sends the filtertaps to the fir filter
     soutct(c,9);
-    printstrln("!!! WARNING!!! This example does not yet calculate the correct answer for the FIR output, for FIR-performance analasis only");
-	printstrln("Testing performance, Running FIR-filter for 1 sec on a single thread with");
+    printstrln("Testing performance, Running FIR-filter for 1 sec");
 	printint(ELEMENTS);
 	printstrln(" filter taps");
 	t:> time;

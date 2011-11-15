@@ -106,6 +106,12 @@ int fir_Multithreading3(streaming chanend c, int h[], int x[], unsigned ntaps){
     if(ntaps%3!=0){
         return -1;
     }
+	for(int i=0;i<ntaps;i++){
+		c:>h[i];
+		x[i]=0;
+		x[i+ntaps]=0;
+	}
+	schkct(c,9); // Check that all filter taps was sent
     for (int i = 0; i < 3; i++) {
         LDAW(hPtr[i],h,i*ntaps/3);
         LDAW(xPtr[i],x,i*ntaps/3);
@@ -132,6 +138,12 @@ int fir_Multithreading2(streaming chanend c, int h[], int x[], unsigned ntaps){
     if(ntaps%2!=0){
         return -1;
     }
+	for(int i=0;i<ntaps;i++){
+		c:>h[i];
+		x[i]=0;
+		x[i+ntaps]=0;
+	}
+	schkct(c,9); // Check that all filter taps was sent
     for (int i = 0; i < 2; i++) {
         LDAW(hPtr[i],h,i*ntaps/2);
         LDAW(xPtr[i],x,i*ntaps/2);
