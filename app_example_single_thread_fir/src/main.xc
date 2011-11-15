@@ -11,24 +11,17 @@
 #include <xs1.h>
 #include <fir.h>
 
-#define ntaps 3000 //Number of FIR filter taps
+#define ntaps 3000
 
 int main() {
 	streaming chan c;
 	unsigned samples;
-	int x[2 * ntaps];
 	int h[ntaps];
-	for (int i = 0; i < ntaps; i++) {
-		h[i] = (i + 1)<<24;
-		x[i] = 0;
-		x[i + ntaps] = 0;
-	}
-	par
-	{
-		firASM_DoubleData_singleThread(c, h, x, ntaps);
+	int x[2*ntaps];
+	par{
+		fir_SingleThread(c,h,x,ntaps);
 		samples = test_performance(c,ntaps); //Generates samples to the FIR filter
 	}
 	calc_CRC(h,x,ntaps,samples);
-
 return 0;
 }

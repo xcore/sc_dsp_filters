@@ -55,11 +55,15 @@ void calc_CRC(int h[],int x[],int ELEMENTS,unsigned samples){
 		printhexln(crc);
 }
 
-int test_performance(streaming chanend c, int ELEMENTS){
+int test_performance(streaming chanend c,int ELEMENTS){
 	timer t;
 	int ans,time;
 	int i = 1;
 	unsigned crc=0;
+	for(int i=0;i<ELEMENTS;i++)
+		c<: (i + 1) << 24; // sends the filtertaps to the fir filter
+    soutct(c,9);
+    printstrln("!!! WARNING!!! This example does not yet calculate the correct answer for the FIR output, for FIR-performance analasis only");
 	printstrln("Testing performance, Running FIR-filter for 1 sec on a single thread with");
 	printint(ELEMENTS);
 	printstrln(" filter taps");

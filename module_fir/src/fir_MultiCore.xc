@@ -7,9 +7,16 @@
 #include <xs1.h>
 //#include "print.h"
 
-int fir_MultiCore(streaming chanend c, streaming chanend cdc[]) {
+int fir_MultiCore(streaming chanend c, streaming chanend cdc[], unsigned ntaps) {
 	int done = 0;
 	int data, temp;
+	for(int i=0;i<ntaps;i++){
+			c:>temp;
+			cdc[3*i/ntaps]<:temp; // distribute h to several cores
+		}
+		schkct(c,9); // Check that all filter taps was sent
+		for(int i=0;i<CORES;i++)
+		soutct(cdc[i],9);
 	c:>data;
 #pragma loop unroll
 	for(int i=0;i<CORES;i++)

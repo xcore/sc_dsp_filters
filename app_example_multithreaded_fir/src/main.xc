@@ -10,33 +10,17 @@
 #include <xs1.h>
 #include <fir.h>
 
-#define NTAPS 3000			   //Number of FIR filter taps
+#define ntaps 3000
+
 int main() {
 	streaming chan c;
-
-	par {
-		on stdcore[0]:{
-			int h[NTAPS];
-			int x[2 * NTAPS];
-			int error;
-			for (int i = 0; i < NTAPS; i++) {
-				h[i] = (i + 1) << 24; //h holds the filter taps
-				x[i] = 0; //reset the filter state
-				x[i + NTAPS] = 0; //reset the filter state
-			}
-			error=fir_Multithreading4(c, h, x, NTAPS);
-			if(error==-1)
-			printstr("\t\t\t!ERROR!\nThe length of the filter must be a multiple of 'THREADS'\n"
-					"********************************************************\n");
-		}on stdcore[1]:{
-			int samples;
-			int h[NTAPS];
-			int x[2 * NTAPS];
-			for (int i = 0; i < NTAPS; i++)
-				h[i] = (i + 1) << 24; //h holds the filter taps
-				samples = test_performance(c, NTAPS); //Generates samples to the FIR filter
-				calc_CRC(h, x, NTAPS, samples);
-			}
-		}
-		return 0;
+	unsigned samples;
+	int h[ntaps];
+	int x[2*ntaps];
+	par{
+		fir_Multithreading4(c, h, x, ntaps);
+		samples = test_performance(c, ntaps); //Generates samples to the FIR filter
 	}
+	calc_CRC(h,x,ntaps,samples);
+return 0;
+}

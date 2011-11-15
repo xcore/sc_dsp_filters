@@ -7,12 +7,21 @@
 #include "fir.h"
 
 
-void distribute(streaming chanend c, streaming chanend cd[],int x[], unsigned ntaps,const unsigned threads) {
+void distribute(streaming chanend c, streaming chanend cd[],int h[],int x[], unsigned ntaps,const unsigned threads) {
     int hi, addhi;
     unsigned lo, addlo;
     int state = ntaps-1;
-    int done = 0;
-    
+    int tmp;
+    int done=0;
+
+    if(stestct(c)){
+    	/* update the filter coef*/
+      for(int i=0;i<ntaps;i++){
+    	  c:>tmp;
+    	  h[i]=tmp;
+    }
+    soutct(c,9);
+    }
     c:>x[0];
     x[ntaps]=x[0];
 #pragma loop unroll
@@ -65,12 +74,18 @@ int fir_Multithreading4(streaming chanend c, int h[], int x[], unsigned ntaps){
     if(ntaps%4!=0){
         return -1;
     }
+	for(int i=0;i<ntaps;i++){
+		c:>h[i];
+		x[i]=0;
+		x[i+ntaps]=0;
+	}
+	schkct(c,9); // Check that all filter taps was sent
     for (int i = 0; i < 4; i++) {
         LDAW(hPtr[i],h,i*ntaps/4);
         LDAW(xPtr[i],x,i*ntaps/4);
     }
     par {
-        distribute(c,cd,x,ntaps,4);
+        distribute(c,cd,h,x,ntaps,4);
         par(int i=0;i<4;i++){firASM_DoubleData_multiThread(cd[i],hPtr[i],xPtr[i],ntaps/4);}
     }
 
@@ -96,7 +111,7 @@ int fir_Multithreading3(streaming chanend c, int h[], int x[], unsigned ntaps){
         LDAW(xPtr[i],x,i*ntaps/3);
     }
     par {
-        distribute(c,cd,x,ntaps,3);
+        distribute(c,cd,h,x,ntaps,3);
         par(int i=0;i<3;i++){firASM_DoubleData_multiThread(cd[i],hPtr[i],xPtr[i],ntaps/3);}
     }
 
@@ -122,7 +137,7 @@ int fir_Multithreading2(streaming chanend c, int h[], int x[], unsigned ntaps){
         LDAW(xPtr[i],x,i*ntaps/2);
     }
     par {
-        distribute(c,cd,x,ntaps,2);
+        distribute(c,cd,h,x,ntaps,2);
         par(int i=0;i<2;i++){firASM_DoubleData_multiThread(cd[i],hPtr[i],xPtr[i],ntaps/2);}
     }
 
@@ -136,3 +151,16 @@ int fir_Multithreading2(streaming chanend c, int h[], int x[], unsigned ntaps){
     }
 return 0;
 }
+
+int fir_SingleThread(streaming chanend c,int h[],int x[], unsigned ntaps){
+	for(int i=0;i<ntaps;i++){
+		c:>h[i];
+		x[i]=0;
+		x[i+ntaps]=0;
+	}
+	schkct(c,9); // Check that all filter taps was sent
+    firASM_DoubleData_singleThread(c, h, x, ntaps);
+return 0;
+}
+
+
