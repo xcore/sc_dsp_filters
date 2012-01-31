@@ -13,5 +13,6 @@ app_example_fir/MakeFIR.class
 doc/Doxyfile-e
 doc/.doxygen
 doc/.sources
+doc/.linked_dirs
 doc/index.pdf
 doc/_build/

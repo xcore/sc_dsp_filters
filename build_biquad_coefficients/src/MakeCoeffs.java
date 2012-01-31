@@ -206,8 +206,8 @@ class MakeCoeffs {
             
         }
         dbcnt = (int) Math.floor((maxdb-mindb+stepdb/4)/stepdb) + 1;
-        if (mindb >= maxdb) {
-            System.err.print("Mindb should be less than maxdb\n");
+        if (mindb > maxdb) {
+            System.err.print("Mindb should be less than or equal to maxdb\n");
             System.exit(1);
         }
         if (dbcnt > maxDbs) {
