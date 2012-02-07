@@ -314,6 +314,8 @@ div.viewcode-block:target {
 
 table { margin-left:auto; margin-right:auto;caption-side:bottom;}
 
+table.field-list { margin-left:0px; }
+
 caption { font-weight: bold;}
 
 div.highlight-python {

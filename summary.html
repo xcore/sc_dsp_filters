@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>DSP Filtering &mdash; DSP filtering v0v1 documentation</title>
+    <title>DSP Filtering &mdash; DSP filtering 0v1 documentation</title>
     <link rel="stylesheet" href="_static/xdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -23,8 +23,9 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://mathjax.connectmv.com/MathJax.js"></script>
     <script type="text/javascript" src="_static/xcomment.js"></script>
-    <link rel="top" title="DSP filtering v0v1 documentation" href="index.html" />
-    <link rel="prev" title="Using FIR filters" href="fir.html" /> 
+    <link rel="top" title="DSP filtering 0v1 documentation" href="index.html" />
+    <link rel="next" title="module_cascading_biquad" href="biquad.html" />
+    <link rel="prev" title="Documentation" href="index.html" /> 
 
 <script>
 function setheight() {
@@ -51,8 +52,10 @@ document.getElementById('d1').style.height=h2 + "px";
         <div class="bodywrapper">
           <div class="body">
 <div style="float: right">
-<a href="fir.html"
+<a href="index.html"
                         title="previous chapter"> &lt&lt </a>
+<a href="biquad.html"
+                        title="next chapter"> &gt&gt </a></p>
 </div>
 
             
@@ -133,38 +136,38 @@ single 50 MIPS thread:</p>
 <col width="19%" />
 </colgroup>
 <tbody valign="top">
-<tr><td colspan="2">Functionality provided</td>
+<tr class="row-odd"><td colspan="2">Functionality provided</td>
 <td colspan="3">Resources required</td>
 <td rowspan="2">Status</td>
 </tr>
-<tr><td>Channels</td>
+<tr class="row-even"><td>Channels</td>
 <td>Filters</td>
 <td>Thread cycles</td>
 <td>Max rate</td>
 <td>Memory</td>
 </tr>
-<tr><td>1</td>
+<tr class="row-odd"><td>1</td>
 <td>1</td>
 <td>53</td>
 <td>943 KHz</td>
 <td>? KB</td>
 <td>Implemented</td>
 </tr>
-<tr><td>2</td>
+<tr class="row-even"><td>2</td>
 <td>1</td>
 <td>106</td>
 <td>471 KHz</td>
 <td>? KB</td>
 <td>Implemented</td>
 </tr>
-<tr><td>1</td>
+<tr class="row-odd"><td>1</td>
 <td>2 in series</td>
 <td>77</td>
 <td>649 KHz</td>
 <td>? KB</td>
 <td>Implemented</td>
 </tr>
-<tr><td>M</td>
+<tr class="row-even"><td>M</td>
 <td>N in series</td>
 <td>M (29+24 N)</td>
 <td>50/...</td>
@@ -193,38 +196,38 @@ are approximate:</p>
 <col width="25%" />
 </colgroup>
 <tbody valign="top">
-<tr><td colspan="2">Functionality provided</td>
+<tr class="row-odd"><td colspan="2">Functionality provided</td>
 <td colspan="3">Resources required</td>
 <td rowspan="2">Status</td>
 </tr>
-<tr><td>Channels</td>
+<tr class="row-even"><td>Channels</td>
 <td>Taps</td>
 <td>Thread cycles</td>
 <td>Max rate</td>
 <td>Memory</td>
 </tr>
-<tr><td>1</td>
+<tr class="row-odd"><td>1</td>
 <td>1</td>
 <td>43</td>
 <td>1.1 MHz</td>
 <td>? KB</td>
 <td>Implemented, TBC</td>
 </tr>
-<tr><td>2</td>
+<tr class="row-even"><td>2</td>
 <td>1</td>
 <td>86</td>
 <td>581 KHz</td>
 <td>? KB</td>
 <td>Implemented, TBC</td>
 </tr>
-<tr><td>1</td>
+<tr class="row-odd"><td>1</td>
 <td>2</td>
 <td>43</td>
 <td>943 KHz</td>
 <td>? KB</td>
 <td>Implemented, TBC</td>
 </tr>
-<tr><td>M</td>
+<tr class="row-even"><td>M</td>
 <td>N</td>
 <td>M (33+10 N)</td>
 <td>50/...</td>
@@ -245,13 +248,13 @@ are approximate:</p>
         <div class="sphinxsidebarwrapper">
 <h3><a href="index.html">DSP filtering (0v1)</a></h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="biquad.html">Using Biquad filters</a></li>
-<li class="toctree-l1"><a class="reference internal" href="fir.html">Using FIR filters</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">DSP Filtering</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#module-cascading-biquad">module_cascading_biquad</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-fir">module_fir</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="biquad.html">module_cascading_biquad</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fir.html">Using FIR filters</a></li>
 </ul>
 
 <div id="searchbox" style="display: none;margin-bottom: 10px;">
