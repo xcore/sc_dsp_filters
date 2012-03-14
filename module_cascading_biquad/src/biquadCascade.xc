@@ -35,6 +35,11 @@ int biquadCascade(biquadState &state, int xn) {
     for(int j=0; j<BANKS; j++) {
         ynl = (1<<(FRACTIONALBITS-1));        // 0.5, for rounding, could be triangular noise
         ynh = 0;
+        // biquad formula:  y[n] = (b0/a0)*x[n] + (b1/a0)*x[n-1] + (b2/a0)*x[n-2]
+        //                                      - (a1/a0)*y[n-1] - (a2/a0)*y[n-2]  
+        // where y[n-1] in stage j is x[n-1] from the previous iteration of stage j+1
+        // source: biquad EQ cookbook by Robert Bristow-Johnson
+        //
         {ynh, ynl} = macs( biquads[state.b[j].db][j].b0, xn, ynh, ynl);
         {ynh, ynl} = macs( biquads[state.b[j].db][j].b1, state.b[j].xn1, ynh, ynl);
         {ynh, ynl} = macs( biquads[state.b[j].db][j].b2, state.b[j].xn2, ynh, ynl);
