@@ -116,7 +116,7 @@ void <tt class="descname">asrInit</tt><big>(</big>struct <a class="reference int
 <dt id="asrDelete">
 int <tt class="descname">asrDelete</tt><big>(</big>int<em>&nbsp;sample</em>, int<em>&nbsp;delete</em>, struct <a class="reference internal" href="#asrState" title="asrState"><span>asrState</span></a><em>&nbsp;&amp;state</em><big>)</big><a class="headerlink" href="#asrDelete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function that produces a new sample, possibly interpolating.</p>
-<p>To be called on every sample, set the parameter <tt class="docutils literal"><span class="pre">delete</span></tt> to 1 to indicate that this sample is to be deleted.</p>
+<p>To be called on every sample, set the parameter <tt class="docutils literal"><span class="pre">delete</span></tt> to 1 to indicate that this sample is to be deleted. Anytime that this function is called with a request to delete a sample, at least 8 calls should be made without deletion for the signal to stabilise.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -141,18 +141,21 @@ int <tt class="descname">asrDelete</tt><big>(</big>int<em>&nbsp;sample</em>, int
 <p>A simple example on how to use it is shown below. <strong>to be provided</strong></p>
 <p>A more complex example has two input streams, and it will delete a sample
 on either stream when it runs ahead too far.</p>
-<div class="highlight-none"><div class="highlight"><pre>// This example is untested... Ought to be...
+<div class="highlight-none"><div class="highlight"><pre>#define MAXDIST 4
+
+// This example is untested... Ought to be...
 void twoStreamExample(chanend inX, chanend inY, chanend outX, chanend outY) {
     struct asrState asrStateX, asrStateY;
-    int sample;
+    int sample, v, deleteOne;
+    int diff = 0;
     asrInit(asrStateX);
     asrInit(asrStateY);
     while(1) {
         select {
         case inX :&gt; sample:
             diff++;
-            if (diff &gt; 10) {
-                deleteOne = 1;
+            deleteOne = diff &gt;= MAXDIST;
+            if (deleteOne) {
                 diff--;
             }
             v = asrDelete(sample, deleteOne, asrStateX);
@@ -162,8 +165,8 @@ void twoStreamExample(chanend inX, chanend inY, chanend outX, chanend outY) {
             break;
         case inY :&gt; sample:
             diff--;
-            if (diff &lt; -10) {
-                deleteOne = 1;
+            deleteOne = diff &lt;= -MAXDIST;
+            if (deleteOne) {
                 diff++;
             }
             v = asrDelete(sample, deleteOne, asrStateY);
