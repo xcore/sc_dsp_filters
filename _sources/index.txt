@@ -6,4 +6,5 @@ Documentation
    summary.rst
    biquad.rst
    fir.rst
+   asr.rst
 

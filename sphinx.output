@@ -1,0 +1,35 @@
+Running Sphinx v1.1.2
+loading pickled environment... not yet created
+building [html]: targets for 6 source files that are out of date
+updating environment: 6 added, 0 changed, 0 removed
+reading sources... [ 16%] asr
+Rendering Doxygen struct asrState
+Rendering Doxygen function void asrInit
+Rendering Doxygen function int asrDelete
+reading sources... [ 33%] biquad
+Rendering Doxygen struct biquadState
+Rendering Doxygen struct coeff
+Rendering Doxygen function void initBiquads
+Rendering Doxygen function int biquadCascade
+reading sources... [ 50%] dsp_timing
+reading sources... [ 66%] fir
+reading sources... [ 83%] index
+reading sources... [100%] summary
+
+looking for now-outdated files... none found
+pickling environment... done
+checking consistency... /Users/henk/gitCommunity/sc_dsp_filters/doc/dsp_timing.rst:: WARNING: document isn't included in any toctree
+done
+preparing documents... done
+writing output... [ 16%] asr
+writing output... [ 33%] biquad
+writing output... [ 50%] dsp_timing
+writing output... [ 66%] fir
+writing output... [ 83%] index
+writing output... [100%] summary
+
+writing additional files... genindex search
+copying static files... done
+dumping search index... done
+dumping object inventory... done
+build succeeded, 1 warning.

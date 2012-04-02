@@ -6,13 +6,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>XMOS XS1-L1 DSP Performance Application Note &mdash; DSP filtering 0v1 documentation</title>
+    <title>XMOS XS1-L1 DSP Performance Application Note &mdash; Documentation  documentation</title>
     <link rel="stylesheet" href="_static/xdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0v1',
+        VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -21,9 +21,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="http://mathjax.connectmv.com/MathJax.js"></script>
     <script type="text/javascript" src="_static/xcomment.js"></script>
-    <link rel="top" title="DSP filtering 0v1 documentation" href="index.html" /> 
+    <link rel="top" title="Documentation  documentation" href="index.html" /> 
 
 <script>
 function setheight() {
@@ -148,16 +147,16 @@ can retime the binary:</p>
 output frequency response, just seeing how many filters can be
 implemented. For details of what these parameters mean to the FILTER
 definition, see the documentation in the sc_dsp_filters module)</p>
-<dl class="docutils">
-<dt>Again, load the new binary in XTA and analyze the biquadAsm function::</dt>
-<dd>function: biquadAsm
+<p>Again, load the new binary in XTA and analyze the biquadAsm function:</p>
+<div class="highlight-none"><div class="highlight"><pre>function: biquadAsm
 stdcore[0] (node: 0, core: 0)
 Pass, Num Paths: 14
 Worst Case Timing:    4.3 us,    0.23 MHz,     433 thread cycles
 Required:     10.4 us,    0.10 MHz,    1040 thread cycles
 Slack:        6.1 us,    0.16 MHz,     607 thread cycles
-Min Core Frequency:      166 MHz</dd>
-</dl>
+Min Core Frequency:      166 MHz
+</pre></div>
+</div>
 <p>Notice that despite our previous estimate, we still haven&#8217;t consumed
 all the available time. In fact from this run of XTA, we could still
 double the number of filters again and meet timing. This is due to the
@@ -181,16 +180,16 @@ still meeet timing. Edit the makefile:</p>
 </pre></div>
 </div>
 <p>and rebuild as previously.</p>
-<dl class="docutils">
-<dt>Again, we run XTA on the biquadAsm function::</dt>
-<dd>function: biquadAsm
+<p>Again, we run XTA on the biquadAsm function:</p>
+<div class="highlight-none"><div class="highlight"><pre>function: biquadAsm
 stdcore[0] (node: 0, core: 0)
 Pass, Num Paths: 14
 Worst Case Timing:    9.7 us,    0.10 MHz,     967 thread cycles
 Required:     10.4 us,    0.10 MHz,    1040 thread cycles
 Slack:      730.0 ns,    1.37 MHz,      73 thread cycles
-Min Core Frequency:      371 MHz</dd>
-</dl>
+Min Core Frequency:      371 MHz
+</pre></div>
+</div>
 <p>So this shows we still meet timing with 20 biquad filters, but we
 might only fit one more at best into the slack 73 thread cycles. This
 is guaranteed to be worst case timing, so we can confident with 20
@@ -267,11 +266,12 @@ accuracy loss.</p>
       </div>
       <div class="sphinxsidebar" id='d2'>
         <div class="sphinxsidebarwrapper">
-<h3><a href="index.html">DSP filtering (0v1)</a></h3>
+<h3><a href="index.html">Documentation</a></h3>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="summary.html">DSP Filtering</a></li>
 <li class="toctree-l1"><a class="reference internal" href="biquad.html">module_cascading_biquad</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fir.html">Using FIR filters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="asr.html">module_asr</a></li>
 </ul>
 
 <div id="searchbox" style="display: none;margin-bottom: 10px;">
