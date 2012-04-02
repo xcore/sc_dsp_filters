@@ -69,18 +69,21 @@ int main(void) {
 }
 
 //::twoexample
+#define MAXDIST 4
+
 // This example is untested... Ought to be...
 void twoStreamExample(chanend inX, chanend inY, chanend outX, chanend outY) {
     struct asrState asrStateX, asrStateY;
-    int sample;
+    int sample, v, deleteOne;
+    int diff = 0;
     asrInit(asrStateX);
     asrInit(asrStateY);
     while(1) {
         select {
         case inX :> sample:
             diff++;
-            if (diff > 10) {
-                deleteOne = 1;
+            deleteOne = diff >= MAXDIST;
+            if (deleteOne) {
                 diff--;
             }
             v = asrDelete(sample, deleteOne, asrStateX);
@@ -90,8 +93,8 @@ void twoStreamExample(chanend inX, chanend inY, chanend outX, chanend outY) {
             break;
         case inY :> sample:
             diff--;
-            if (diff < -10) {
-                deleteOne = 1;
+            deleteOne = diff <= -MAXDIST;
+            if (deleteOne) {
                 diff++;
             }
             v = asrDelete(sample, deleteOne, asrStateY);

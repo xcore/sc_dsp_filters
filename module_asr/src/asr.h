@@ -30,7 +30,9 @@ void asrInit(struct asrState &state);
 
 /** Function that produces a new sample, possibly interpolating. To be
  * called on every sample, set the parameter ``delete`` to 1 to indicate
- * that this sample is to be deleted.
+ * that this sample is to be deleted. Anytime that this function is called
+ * with a request to delete a sample, at least 8 calls should be made
+ * without deletion for the signal to stabilise.
  *
  * \param sample current sample value
  * 

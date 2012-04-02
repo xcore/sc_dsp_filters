@@ -74,7 +74,7 @@ int coeff[65] = {
     0, // -3.8981718325193763E-19 
 };
 
-void asrInit(struct asr_buffer &state) {
+void asrInit(struct asrState &state) {
     state.wr = 0;
     for(int i = 0; i < ASR_ARRAY; i++) {
         state.buffer[i] = 0;
@@ -82,7 +82,7 @@ void asrInit(struct asr_buffer &state) {
     state.insertIndex = -1;
 }
 
-int asrDelete(int sample, int delete, struct asr_buffer &state) {
+int asrDelete(int sample, int delete, struct asrState &state) {
     int index = state.wr;
     int h = 0;
     unsigned l = 0;
