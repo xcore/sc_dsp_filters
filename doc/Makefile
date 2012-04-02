@@ -1,6 +1,6 @@
 SPHINX_PROJECT_NAME=DSP filtering
 VERSION=0v1
-DOXYGEN_DIRS=../../sc_dsp_filters/module_cascading_biquad
+DOXYGEN_DIRS=../../sc_dsp_filters/module_cascading_biquad ../../sc_dsp_filters/module_asr
 SOURCE_INCLUDE_DIRS=../../sc_dsp_filters
 XDOC_DIR ?= ../../xdoc
 include $(XDOC_DIR)/Makefile.inc

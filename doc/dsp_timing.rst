@@ -48,6 +48,7 @@ performance measurements to make best use of the available MIPS.
 Starting with the app_example_biqaud above, configure a single biquad
 filter - edit the "coefficients" section of the Makefile and change
 the FILTER section to::
+
   coefficients:
        make -f ../build_biquad_coefficients/Makefile \
 		FILTER='-min -20 -max 20 -step 1 -bits 27 -low 250 ' \
@@ -57,6 +58,7 @@ the FILTER section to::
 
 The main application file in app_example_biquad/src/main.xc will need
 to be edited for the case of a single filter to comment out line 128::
+
           //            bs.desiredDb[1] = 0;
 
 as with only one filter this is out of bounds.     
@@ -75,6 +77,7 @@ If XTA is used to analyze this function, it should report the
 output below. There is a script (dsp_performance.xta) that will peform
 the necessary commands as this is something that will be repeated lots
 as we change the DSP parameters::
+
   function: biquadAsm 
   stdcore[0] (node: 0, core: 0)
   Pass, Num Paths: 14
@@ -91,6 +94,7 @@ running).
 
 If the Makefile is now edited to increase the number of filters, we
 can retime the binary::
+
    coefficients:
        make -f ../build_biquad_coefficients/Makefile \
 		FILTER='-min -20 -max 20 -step 1 -bits 27 -low 100 -high 2000
@@ -106,6 +110,7 @@ implemented. For details of what these parameters mean to the FILTER
 definition, see the documentation in the sc_dsp_filters module) 
 
 Again, load the new binary in XTA and analyze the biquadAsm function::
+
   function: biquadAsm 
   stdcore[0] (node: 0, core: 0)
   Pass, Num Paths: 14
@@ -125,6 +130,7 @@ an inner loop that iterates for the number of cascaded filters).
 
 Given that new information, let's try 20 filters and see if we can
 still meeet timing. Edit the makefile::
+
   coefficients:
 	  make -f ../build_biquad_coefficients/Makefile \
 		FILTER='-min -20 -max 20 -step 1 -bits 27 -low 100 \
@@ -139,6 +145,7 @@ still meeet timing. Edit the makefile::
 and rebuild as previously.
 
 Again, we run XTA on the biquadAsm function::
+
   function: biquadAsm 
   stdcore[0] (node: 0, core: 0)
   Pass, Num Paths: 14

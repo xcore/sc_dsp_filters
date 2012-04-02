@@ -53,7 +53,7 @@ int sineWave[48] = {
 };
 
 int main(void) {
-    struct asr_buffer asrState;
+    struct asrState asrState;
     int cntr = 45;
     asrInit(asrState);
     for(int i = 0; i < 28; i++) {
@@ -71,7 +71,7 @@ int main(void) {
 //::twoexample
 // This example is untested... Ought to be...
 void twoStreamExample(chanend inX, chanend inY, chanend outX, chanend outY) {
-    struct asr_buffer asrStateX, asrStateY;
+    struct asrState asrStateX, asrStateY;
     int sample;
     asrInit(asrStateX);
     asrInit(asrStateY);

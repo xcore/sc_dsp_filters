@@ -11,7 +11,7 @@
  * executed on. The internals of this structure are relevant only inside
  * the converter and should not be relied upon by the caller.
  */
-struct asr_buffer {
+struct asrState {
     int wr;                 /**< Current index in historic sample value,
                              * points one above the last value written */
     int insertIndex;        /**< whether we are currently interpolating,
@@ -26,7 +26,7 @@ struct asr_buffer {
  * \param state buffer structure containing past sample values for
  *              interpolation
  */
-void asrInit(struct asr_buffer &state);
+void asrInit(struct asrState &state);
 
 /** Function that produces a new sample, possibly interpolating. To be
  * called on every sample, set the parameter ``delete`` to 1 to indicate
@@ -43,4 +43,4 @@ void asrInit(struct asr_buffer &state);
  *
  * \returns an interpolated sample value, or 0 if delete is true.
  */
-int asrDelete(int sample, int delete, struct asr_buffer &state);
+int asrDelete(int sample, int delete, struct asrState &state);
