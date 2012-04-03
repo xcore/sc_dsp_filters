@@ -3,4 +3,4 @@
 // University of Illinois/NCSA Open Source License posted in
 // LICENSE.txt and at <http://github.xcore.com/>
 
-extern int asrcCoeffs[65];
+extern int asrcCoeffs[ASRC_ORDER*ASRC_ORDER + 1];

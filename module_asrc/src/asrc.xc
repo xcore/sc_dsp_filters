@@ -3,7 +3,8 @@
 // University of Illinois/NCSA Open Source License posted in
 // LICENSE.txt and at <http://github.xcore.com/>
 
-#include "xs1.h"
+#include <xs1.h>
+#include <stdio.h>
 #include "asrc.h"
 #include "coeffs.h"
 
@@ -67,13 +68,12 @@ int asrcFilter(int sample, int diff, struct asrcState &state) {
         rd &= (ASRC_ARRAY-1);
         firPosition = state.firStart;
         state.firStart++;
-        if (state.firStart == 8) {
+        if (state.firStart == ASRC_ORDER) {
             state.state = NEITHER;
         }
     }
 
-    // we have a FIR running, execute over all 8 points
-
+    // we have a FIR running, execute over all ASRC_ORDER points
 #pragma loop unroll
     for(int i = 0; i < ASRC_ORDER; i++) {
         {h,l} = macs(asrcCoeffs[firPosition], state.buffer[rd], h, l);
@@ -81,6 +81,7 @@ int asrcFilter(int sample, int diff, struct asrcState &state) {
         rd++;
         rd &= (ASRC_ARRAY-1);
     }
-    h = h << 11 | l >> 21;
+    h = h << (8+DIVIDE_SHIFT) | l >> (24 - DIVIDE_SHIFT);
+
     return h;
 }

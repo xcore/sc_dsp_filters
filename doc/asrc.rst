@@ -15,6 +15,19 @@ MIPS can filter around 8 streams at 48 KHz, or 2 streams at 192 KHz.
 API
 ---
 
+
+Configuration defines
+'''''''''''''''''''''
+
+**ASRC_ORDER**
+
+    This sets the number of samples over which to smooth the signal. The
+    filter will be sqaure that size. Supported values are 8 (default)
+    and 16. Higher values create less audible artifacts, but increase
+    latency in the signal, and increase computational requirements; both
+    linear.
+
+
 Types
 '''''
 

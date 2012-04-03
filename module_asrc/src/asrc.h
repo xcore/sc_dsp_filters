@@ -3,8 +3,19 @@
 // University of Illinois/NCSA Open Source License posted in
 // LICENSE.txt and at <http://github.xcore.com/>
 
+#ifndef ASRC_ORDER
 #define ASRC_ORDER 8
+#endif
+
+#if (ASRC_ORDER == 8)
 #define ASRC_ARRAY 16
+#define DIVIDE_SHIFT 3
+#elif (ASRC_ORDER == 16)
+#define ASRC_ARRAY 32
+#define DIVIDE_SHIFT 4
+#else
+#error "Undefined ASRC_ORDER, set to 8 or 16"
+#endif
 
 /** Structure that is used to store the state of the converter. One
  * structure should be declared for each channel that the converter is
