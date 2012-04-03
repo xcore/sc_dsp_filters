@@ -3,6 +3,9 @@ loading pickled environment... not yet created
 building [html]: targets for 7 source files that are out of date
 updating environment: 7 added, 0 changed, 0 removed
 reading sources... [ 14%] asrc
+Rendering Doxygen struct asrcState
+Rendering Doxygen function void asrcInit
+Rendering Doxygen function int asrcFilter
 reading sources... [ 28%] asrc-internal
 reading sources... [ 42%] biquad
 Rendering Doxygen struct biquadState
@@ -14,36 +17,9 @@ reading sources... [ 71%] fir
 reading sources... [ 85%] index
 reading sources... [100%] summary
 
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc.rst:38: WARNING: doxygenstruct: Cannot find struct "asrcState" in doxygen xml output
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc.rst:43: WARNING: doxygenfunction: Cannot find function "asrcInit" in doxygen xml output
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc.rst:45: WARNING: doxygenfunction: Cannot find function "asrcFilter" in doxygen xml output
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:13: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:20: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:27: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:28: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:35: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:36: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:44: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:45: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:52: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:53: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:60: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:71: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:78: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:79: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:86: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:87: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:94: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:95: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:104: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:105: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:112: WARNING: Block quote ends without a blank line; unexpected unindent.
-/Users/henk/gitCommunity/sc_dsp_filters/doc/index.rst:8: WARNING: toctree contains reference to nonexisting document u'asr'
 looking for now-outdated files... none found
 pickling environment... done
-checking consistency... /Users/henk/gitCommunity/sc_dsp_filters/doc/asrc.rst:: WARNING: document isn't included in any toctree
-/Users/henk/gitCommunity/sc_dsp_filters/doc/asrc-internal.rst:: WARNING: document isn't included in any toctree
-/Users/henk/gitCommunity/sc_dsp_filters/doc/dsp_timing.rst:: WARNING: document isn't included in any toctree
+checking consistency... /Users/henk/gitCommunity/sc_dsp_filters/doc/dsp_timing.rst:: WARNING: document isn't included in any toctree
 done
 preparing documents... done
 writing output... [ 14%] asrc
@@ -58,4 +34,4 @@ writing additional files... genindex search
 copying static files... done
 dumping search index... done
 dumping object inventory... done
-build succeeded, 28 warnings.
+build succeeded, 1 warning.

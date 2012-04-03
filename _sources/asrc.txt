@@ -43,7 +43,14 @@ Functions
 Example
 '''''''
 
-A simple example on how to use it is shown below. **to be provided**
+A simple example reclocks an input stream to a given wordclock. The
+assumption are that both input stream and wordclock are stable, and almost
+the same frequency. A sample is added or deleted when the stream runs out
+of sync too far with the word clock
+
+.. literalinclude:: app_example_asr/src/main.xc
+  :start-after: //::reclockexample
+  :end-before: //::
 
 
 A more complex example has two input streams, and it will delete a sample
@@ -51,10 +58,5 @@ on either stream when it runs ahead too far.
 
 .. literalinclude:: app_example_asr/src/main.xc
   :start-after: //::twoexample
-  :end-before: //::
-
-
-.. literalinclude:: app_example_asr/src/main.xc
-  :start-after: //::reclockexample
   :end-before: //::
 

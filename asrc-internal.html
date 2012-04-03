@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>DELETING A POINT &mdash; Documentation  documentation</title>
+    <title>Internals of module_asrc &mdash; Documentation  documentation</title>
     <link rel="stylesheet" href="_static/xdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -22,7 +22,8 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/xcomment.js"></script>
-    <link rel="top" title="Documentation  documentation" href="index.html" /> 
+    <link rel="top" title="Documentation  documentation" href="index.html" />
+    <link rel="prev" title="module_asr" href="asrc.html" /> 
 
 <script>
 function setheight() {
@@ -49,129 +50,143 @@ document.getElementById('d1').style.height=h2 + "px";
         <div class="bodywrapper">
           <div class="body">
 <div style="float: right">
+<a href="asrc.html"
+                        title="previous chapter"> &lt&lt </a>
 </div>
 
             
-  <div class="section" id="deleting-a-point">
-<h1>DELETING A POINT<a class="headerlink" href="#deleting-a-point" title="Permalink to this headline">¶</a></h1>
-<p>Step 0: no FIR - prior to delete</p>
-<blockquote>
-<div>NRP                                              WP</div></blockquote>
-<dl class="docutils">
-<dt>.......B.......B.......B.......B.......0.......1.......2.......3.......4.......-</dt>
-<dd>.......X........X........X........X........X........X........X........X........X.........</dd>
-</dl>
-<p>Step 1: only advance WP as normal - do not return points</p>
-<blockquote>
-<div>NRP                                              WP</div></blockquote>
-<dl class="docutils">
-<dt>.......B.......B.......B.......B.......0.......1.......2.......3.......4.......5.......-</dt>
-<dd>.......X........X........X........X........X........X........X........X........X.........</dd>
-</dl>
-<p>Step 2: 8 point active out of 65 point FIR, start from 7 for WP-10:</p>
-<blockquote>
-<div><blockquote>
-<div>NRP                                              WP</div></blockquote>
-<p>=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-+&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=</p>
-</div></blockquote>
-<dl class="docutils">
-<dt>....... .......B.......B.......B.......0.......1.......2.......3.......4.......5.......6.......-</dt>
-<dd>.......X........X........X........X........X........X........X........X........X.........</dd>
-</dl>
-<p>Step 3: 8 point active out of 65 point FIR, start from 6 for WP-10:</p>
-<blockquote>
-<div><blockquote>
-<div>NRP                                              WP</div></blockquote>
-<p>=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-+&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=</p>
-</div></blockquote>
-<dl class="docutils">
-<dt>....... ....... .......B.......B.......0.......1.......2.......3.......4.......5.......6.......7.......-</dt>
-<dd>.......X........X........X........X........X........X........X........X........X.........</dd>
-</dl>
-<p>...</p>
-<p>Step 7: 8 point active out of 65 point FIR, start from 2 for WP-10:</p>
-<blockquote>
-<div><blockquote>
-<div>NRP                                              WP</div></blockquote>
-<p>=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-+&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=</p>
-</div></blockquote>
-<dl class="docutils">
-<dt>....... ....... ....... ....... ....... ....... .......2.......3.......4.......5.......6.......7.......8.......9.......A.......B.......-</dt>
-<dd>.......X........X........X........X........X........X........X........X........X.........</dd>
-</dl>
-<p>Step 8: 8 point active out of 65 point FIR, start from 1 for WP-10:</p>
-<blockquote>
-<div><blockquote>
-<div>NRP                                              WP</div></blockquote>
-<p>=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-+&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=</p>
-</div></blockquote>
-<dl class="docutils">
-<dt>....... ....... ....... ....... ....... ....... ....... .......3.......4.......5.......6.......7.......8.......9.......A.......B.......C.......-</dt>
-<dd>.......X........X........X........X........X........X........X........X........X.........</dd>
-</dl>
-<p>Step 9: back to normal:</p>
-<blockquote>
-<div>NRP                                              WP</div></blockquote>
-<dl class="docutils">
-<dt>....... ....... ....... ....... ....... ....... ....... .......3.......4.......5.......6.......7.......8.......9.......A.......B.......C.......D.......-</dt>
-<dd>.......X........X........X........X........X........X........X........X........X.........</dd>
-</dl>
+  <div class="section" id="internals-of-module-asrc">
+<h1>Internals of module_asrc<a class="headerlink" href="#internals-of-module-asrc" title="Permalink to this headline">¶</a></h1>
+<p>Belwo we describe the ASRC implementation. THe basic sequence of operations
+is as follows:</p>
+<ul class="simple">
+<li>Recent samples are stored in a circular buffer.</li>
+<li>When a request is made to delete or insert a sample, a low pass FIR is
+used to interpolate</li>
+<li>Between each two samples in a series of 16 samples, 7 zeros are inserted.
+Then from sample 5 to 13, the FIR is then applied in order to compute
+intermediate samples.</li>
+<li>Computations are not performed on the zero samples.</li>
+</ul>
+<p>This is shown graphically below Each line starting with B........B..... etc
+indicates the input samples with each &#8216;.&#8217; representing a 0 sample, and B,
+0, 1, 2, 3, ... the sample values.
+The markers &#8220;NRP&#8221; and &#8220;WP&#8221; indicate the normal read point and write point.
+The line below with the ....X.... indicates where the subsapmpling takes
+place. Finally, the line with &#8212;-=&#8212; shows the place of the FIR, with the
+&#8216;=&#8217; symbols representing the zero crossings of the FIR, and the &#8216;+&#8217; the
+center.</p>
+<p>It helped me :)</p>
+<div class="section" id="deleting-a-sample">
+<h2>Deleting a sample<a class="headerlink" href="#deleting-a-sample" title="Permalink to this headline">¶</a></h2>
+<p>The code is:</p>
+<div class="highlight-none"><div class="highlight"><pre>Step 0: no FIR - prior to delete
+
+                              NRP                                              WP
+.......B.......B.......B.......B.......0.......1.......2.......3.......4.......-
+                        .......X........X........X........X........X........X........X........X........X.........
+
+
+Step 1: only advance WP as normal - do not return points
+
+                                      NRP                                              WP
+.......B.......B.......B.......B.......0.......1.......2.......3.......4.......5.......-
+                        .......X........X........X........X........X........X........X........X........X.........
+
+
+Step 2: 8 point active out of 65 point FIR, start from 7 for WP-10:
+
+                                              NRP                                              WP
+        =-------=-------=-------=-------+-------=-------=-------=-------=
+....... .......B.......B.......B.......0.......1.......2.......3.......4.......5.......6.......-
+                        .......X........X........X........X........X........X........X........X........X.........
+
+
+Step 3: 8 point active out of 65 point FIR, start from 6 for WP-10:
+
+                                                      NRP                                              WP
+                 =-------=-------=-------=-------+-------=-------=-------=-------=
+....... ....... .......B.......B.......0.......1.......2.......3.......4.......5.......6.......7.......-
+                        .......X........X........X........X........X........X........X........X........X.........
+
+...
+
+Step 7: 8 point active out of 65 point FIR, start from 2 for WP-10:
+
+                                                                                      NRP                                              WP
+                                                     =-------=-------=-------=-------+-------=-------=-------=-------=
+....... ....... ....... ....... ....... ....... .......2.......3.......4.......5.......6.......7.......8.......9.......A.......B.......-
+                        .......X........X........X........X........X........X........X........X........X.........
+
+
+Step 8: 8 point active out of 65 point FIR, start from 1 for WP-10:
+
+                                                                                              NRP                                              WP
+                                                              =-------=-------=-------=-------+-------=-------=-------=-------=
+....... ....... ....... ....... ....... ....... ....... .......3.......4.......5.......6.......7.......8.......9.......A.......B.......C.......-
+                        .......X........X........X........X........X........X........X........X........X.........
+
+
+Step 9: back to normal:
+
+                                                                                                      NRP                                              WP
+....... ....... ....... ....... ....... ....... ....... .......3.......4.......5.......6.......7.......8.......9.......A.......B.......C.......D.......-
+                        .......X........X........X........X........X........X........X........X........X.........
+</pre></div>
+</div>
 </div>
 <div class="section" id="inserting-a-point">
-<h1>INSERTING A POINT<a class="headerlink" href="#inserting-a-point" title="Permalink to this headline">¶</a></h1>
-<p>Step 0: no FIR - prior to insert</p>
-<blockquote>
-<div>NRP                                              WP</div></blockquote>
-<p>.......B.......B.......B.......B.......0.......1.......2.......3.......4.......-</p>
-<p>Step 1: do not advance WP, return 1 point ahead of normal read point
-relative to non advanced WP:</p>
-<blockquote>
-<div><blockquote>
-<div>NRP                                              WP</div></blockquote>
-<p>=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-+&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=</p>
-</div></blockquote>
-<dl class="docutils">
-<dt>.......B.......B.......B.......B.......0.......1.......2.......3.......4.......-</dt>
-<dd>.......X......X......X......X......X......X......X......X......X...............</dd>
-</dl>
-<p>Step 2: 8 point active out of 65 point FIR, start from 1 on WP-9:</p>
-<blockquote>
-<div><blockquote>
-<div>NRP                                              WP</div></blockquote>
-<p>=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-+&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=</p>
-</div></blockquote>
-<dl class="docutils">
-<dt>....... .......B.......B.......B.......0.......1.......2.......3.......4.......5.......-</dt>
-<dd>.......X......X......X......X......X......X......X......X......X...............</dd>
-</dl>
-<p>Step 3: 8 point active out of 65 point FIR, start from 2 on WP-9:</p>
-<blockquote>
-<div><blockquote>
-<div>NRP                                              WP</div></blockquote>
-<p>=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-+&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=</p>
-</div></blockquote>
-<dl class="docutils">
-<dt>....... ....... .......B.......B.......0.......1.......2.......3.......4.......5.......6.......-</dt>
-<dd>.......X......X......X......X......X......X......X......X......X...............</dd>
-</dl>
-<p>...</p>
-<p>Step 8: 8 point active out of 65 point FIR, start from 7 on WP-9:</p>
-<blockquote>
-<div><blockquote>
-<div>NRP                                              WP</div></blockquote>
-<p>=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-+&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=</p>
-</div></blockquote>
-<dl class="docutils">
-<dt>....... ....... ....... ....... ....... ....... ....... .......3.......4.......5.......6.......7.......8.......9.......A.......B.......-</dt>
-<dd>.......X......X......X......X......X......X......X......X......X...............</dd>
-</dl>
-<p>Step 9: return to normal:</p>
-<blockquote>
-<div>NRP                                              WP</div></blockquote>
-<dl class="docutils">
-<dt>....... ....... ....... ....... ....... ....... ....... .......3.......4.......5.......6.......7.......8.......9.......A.......B.......C.......-</dt>
-<dd>.......X......X......X......X......X......X......X......X......X...............</dd>
-</dl>
+<h2>INSERTING A POINT<a class="headerlink" href="#inserting-a-point" title="Permalink to this headline">¶</a></h2>
+<p>The code is:</p>
+<div class="highlight-none"><div class="highlight"><pre>Step 0: no FIR - prior to insert
+
+                              NRP                                              WP
+.......B.......B.......B.......B.......0.......1.......2.......3.......4.......-
+
+
+Step 1: do not advance WP, return 1 point ahead of normal read point
+relative to non advanced WP:
+
+                              NRP                                              WP
+       =-------=-------=-------=-------+-------=-------=-------=-------=
+.......B.......B.......B.......B.......0.......1.......2.......3.......4.......-
+                                .......X......X......X......X......X......X......X......X......X...............
+
+
+Step 2: 8 point active out of 65 point FIR, start from 1 on WP-9:
+
+                                      NRP                                              WP
+              =-------=-------=-------=-------+-------=-------=-------=-------=
+....... .......B.......B.......B.......0.......1.......2.......3.......4.......5.......-
+                                .......X......X......X......X......X......X......X......X......X...............
+
+
+Step 3: 8 point active out of 65 point FIR, start from 2 on WP-9:
+
+                                              NRP                                              WP
+                     =-------=-------=-------=-------+-------=-------=-------=-------=
+....... ....... .......B.......B.......0.......1.......2.......3.......4.......5.......6.......-
+                                .......X......X......X......X......X......X......X......X......X...............
+
+...
+
+
+Step 8: 8 point active out of 65 point FIR, start from 7 on WP-9:
+
+                                                                                      NRP                                              WP
+                                                        =-------=-------=-------=-------+-------=-------=-------=-------=
+....... ....... ....... ....... ....... ....... ....... .......3.......4.......5.......6.......7.......8.......9.......A.......B.......-
+                                .......X......X......X......X......X......X......X......X......X...............
+
+
+Step 9: return to normal:
+
+                                                                                              NRP                                              WP
+....... ....... ....... ....... ....... ....... ....... .......3.......4.......5.......6.......7.......8.......9.......A.......B.......C.......-
+                                .......X......X......X......X......X......X......X......X......X...............
+</pre></div>
+</div>
+</div>
 </div>
 
 
@@ -182,10 +197,16 @@ relative to non advanced WP:</p>
       <div class="sphinxsidebar" id='d2'>
         <div class="sphinxsidebarwrapper">
 <h3><a href="index.html">Documentation</a></h3>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="summary.html">DSP Filtering</a></li>
 <li class="toctree-l1"><a class="reference internal" href="biquad.html">module_cascading_biquad</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fir.html">Using FIR filters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="asrc.html">module_asr</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Internals of module_asrc</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#deleting-a-sample">Deleting a sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#inserting-a-point">INSERTING A POINT</a></li>
+</ul>
+</li>
 </ul>
 
 <div id="searchbox" style="display: none;margin-bottom: 10px;">
