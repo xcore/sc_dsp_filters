@@ -114,3 +114,26 @@ are approximate:
 | M        | N           | M (33+10 N) | 50/...  | ? KB     | Implemented, TBC |
 +----------+-------------+-------------+---------+----------+------------------+
 
+
+module_asrc
+-----------
+
+The ASRC module implements a function that performs a Asynchronous Sample
+Rate Conversion. The module delays the signal by five samples, or around
+100 us at 48 KHz. The maximum sample rate given assumes a single 50 MIPS
+thread soleley dedicated to this task.
+
++----------+----------------------------------+-------------+
+| Functiona| Resources required               | Status      |
++----------+-------------+---------+----------+             |
+| Channels |Thread cycles|Max rate | Memory   |             |
++----------+-------------+---------+----------+-------------+
+| 1        | 120         | 416 kHz | 630 B    | Implemented |
++----------+-------------+---------+----------+-------------+
+| 2        | 240         | 208 kHz | 710 B    | Implemented |
++----------+-------------+---------+----------+-------------+
+| 4        | 480         | 104 kHz | 870 B    | Implemented |
++----------+-------------+---------+----------+-------------+
+| N        | 120 N       | 416/N   | 550+80N  | Implemented |
++----------+-------------+---------+----------+-------------+
+

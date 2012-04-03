@@ -4,7 +4,7 @@
 // LICENSE.txt and at <http://github.xcore.com/>
 
 #define ASRC_ORDER 8
-#define ASRC_ARRAY 10
+#define ASRC_ARRAY 16
 
 /** Structure that is used to store the state of the converter. One
  * structure should be declared for each channel that the converter is

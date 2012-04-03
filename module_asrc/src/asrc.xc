@@ -20,6 +20,8 @@ void asrcInit(struct asrcState &state) {
     state.state    = NEITHER;
 }
 
+#pragma unsafe arrays
+
 int asrcFilter(int sample, int diff, struct asrcState &state) {
     int wr;
     int h = 0;
@@ -32,18 +34,14 @@ int asrcFilter(int sample, int diff, struct asrcState &state) {
         state.state = INSERTING;
 
         rd = state.wr - (ASRC_ORDER>>1) - 1;  // Pick one ahead of normal read point
-        if (rd < 0) {
-            rd += ASRC_ARRAY;
-        }
+        rd &= (ASRC_ARRAY-1);
         return state.buffer[rd];               // and return value
     }
 
     wr = state.wr;
     state.buffer[wr] = sample;
     wr++;
-    if (wr >= ASRC_ARRAY) {
-        wr = 0;
-    }
+    wr &= (ASRC_ARRAY-1);
     state.wr = wr;
 
     if(diff == -1) {
@@ -54,22 +52,19 @@ int asrcFilter(int sample, int diff, struct asrcState &state) {
 
     if(state.state == NEITHER) {                   // Negative firStart: no FIR running.
         int rd = wr - (ASRC_ORDER>>1) - 2;  // Pick normal read point
-        if (rd < 0) {
-            rd += ASRC_ARRAY;
-        }
+        rd &= (ASRC_ARRAY-1);
         return state.buffer[rd];               // and return value
     } else if (state.state == DELETING) {
-        rd = state.wr;
+        rd = state.wr + ASRC_ARRAY - ASRC_ORDER - 2;
+        rd &= (ASRC_ARRAY-1);
         firPosition = state.firStart;
         state.firStart--;
         if (state.firStart == 0) {
             state.state = NEITHER;
         }
     } else {                               // INSERTING
-        rd = state.wr+1;
-        if (rd >= ASRC_ARRAY) {
-            rd -= ASRC_ARRAY;
-        }
+        rd = state.wr + ASRC_ARRAY - ASRC_ORDER - 1;
+        rd &= (ASRC_ARRAY-1);
         firPosition = state.firStart;
         state.firStart++;
         if (state.firStart == 8) {
@@ -77,15 +72,14 @@ int asrcFilter(int sample, int diff, struct asrcState &state) {
         }
     }
 
-    // non negative firStart - we have a FIR running, execute over all 8 points:
+    // we have a FIR running, execute over all 8 points
 
+#pragma loop unroll
     for(int i = 0; i < ASRC_ORDER; i++) {
         {h,l} = macs(asrcCoeffs[firPosition], state.buffer[rd], h, l);
         firPosition += ASRC_ORDER;
         rd++;
-        if (rd >= ASRC_ARRAY) {
-            rd -= ASRC_ARRAY;
-        }
+        rd &= (ASRC_ARRAY-1);
     }
     h = h << 11 | l >> 21;
     return h;
