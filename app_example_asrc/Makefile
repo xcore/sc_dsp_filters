@@ -1,7 +1,7 @@
 TARGET = XK-1
 APP_NAME =
 XCC_FLAGS = -O2
-USED_MODULES = module_asr
+USED_MODULES = module_asrc
 
 #=============================================================================
 # The following part of the Makefile includes the common build infrastructure

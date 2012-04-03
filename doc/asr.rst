@@ -12,14 +12,14 @@ API
 Types
 '''''
 
-.. doxygenstruct:: asrState
+.. doxygenstruct:: asrcState
            
 Functions
 '''''''''
 
-.. doxygenfunction:: asrInit
+.. doxygenfunction:: asrcInit
 
-.. doxygenfunction:: asrDelete
+.. doxygenfunction:: asrcFilter
 
 Example
 '''''''
