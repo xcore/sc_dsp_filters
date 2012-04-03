@@ -16,6 +16,7 @@ Key Features
 * Generic cascaded biquad filter
 * Generator for filter values
 * Generic FIR
+* Asynchronous Sample Rate converter
 
 To Do
 =====
