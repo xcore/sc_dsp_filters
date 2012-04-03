@@ -43,7 +43,7 @@ all: coefficients $(BIN_DIR)/$(APP_NAME).xe
 
 coefficients:
 	make -f ../../sc_dsp_filters/build_biquad_coefficients/Makefile \
-		FILTER='-min -20 -max 20 -step 1 -bits 27 -low 250 -high 4000' \
+		FILTER='-min 8 -max 8 -step 1 -bits 28 -low 632 -high 632' \
 		INCLUDEFILE=src/coeffs.h \
 		XCFILE=src/coeffs.xc \
 		CSVFILE=bin/response.csv
