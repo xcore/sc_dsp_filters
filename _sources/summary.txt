@@ -59,11 +59,11 @@ Typically, overflow leads to saturation, but this adds computational
 complexity, and may be removed if not desired. Numbers are typically
 rounded to the nearest value, with 0.5 being rounded up.
 
-There are at present two modules, an FIR filter and a Biquad filter, the
-latter implements an IIR filter using a biquad. Scripts are provided to
-compute coefficients, but it is worth noting that these are textbook
-computations, and that better coefficients can be designed by domain
-experts. 
+There are at present three modules, an FIR filter, a Biquad filter and an
+Asynchronous Sample Rate Converter. The Biquad the latter implements an IIR
+filter. Scripts are provided to compute coefficients, but it is worth
+noting that these are textbook computations, and that better coefficients
+can be designed by domain experts.
 
 
 module_cascading_biquad
@@ -113,4 +113,35 @@ are approximate:
 +----------+-------------+-------------+---------+----------+------------------+
 | M        | N           | M (33+10 N) | 50/...  | ? KB     | Implemented, TBC |
 +----------+-------------+-------------+---------+----------+------------------+
+
+
+module_asrc
+-----------
+
+The ASRC module implements a function that performs a Asynchronous Sample
+Rate Conversion. The module delays the signal by five samples, or around
+100 us at 48 KHz. The maximum sample rate given assumes a single 50 MIPS
+thread soleley dedicated to this task.
+
++------------------------+----------------------------------+-------------+
+| Functionality provided | Resources required               | Status      |
++----------+-------------+-------------+---------+----------+             |
+| Channels | Filter taps |Thread cycles|Max rate | Memory   |             |
++----------+-------------+-------------+---------+----------+-------------+
+| 1        | 65          | 120         | 416 kHz | 630 B    | Implemented |
++----------+-------------+-------------+---------+----------+-------------+
+| 2        | 65          | 240         | 208 kHz | 710 B    | Implemented |
++----------+-------------+-------------+---------+----------+-------------+
+| 4        | 65          | 480         | 104 kHz | 870 B    | Implemented |
++----------+-------------+-------------+---------+----------+-------------+
+| N        | 65          | 120 N       | 416/N   | 550+80N  | Implemented |
++----------+-------------+-------------+---------+----------+-------------+
+| 1        | 257         | 185         | 270 kHz | 1400 B   | Implemented |
++----------+-------------+-------------+---------+----------+-------------+
+| 2        | 257         | 370         | 135 kHz | 1480 B   | Implemented |
++----------+-------------+-------------+---------+----------+-------------+
+| 4        | 257         | 740         |  67 kHz | 1560 B   | Implemented |
++----------+-------------+-------------+---------+----------+-------------+
+| N        | 257         | 185 N       | 270/N   | 1320+80N | Implemented |
++----------+-------------+-------------+---------+----------+-------------+
 

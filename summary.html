@@ -114,11 +114,11 @@ filter.</p>
 <p>Typically, overflow leads to saturation, but this adds computational
 complexity, and may be removed if not desired. Numbers are typically
 rounded to the nearest value, with 0.5 being rounded up.</p>
-<p>There are at present two modules, an FIR filter and a Biquad filter, the
-latter implements an IIR filter using a biquad. Scripts are provided to
-compute coefficients, but it is worth noting that these are textbook
-computations, and that better coefficients can be designed by domain
-experts.</p>
+<p>There are at present three modules, an FIR filter, a Biquad filter and an
+Asynchronous Sample Rate Converter. The Biquad the latter implements an IIR
+filter. Scripts are provided to compute coefficients, but it is worth
+noting that these are textbook computations, and that better coefficients
+can be designed by domain experts.</p>
 <div class="section" id="module-cascading-biquad">
 <h2>module_cascading_biquad<a class="headerlink" href="#module-cascading-biquad" title="Permalink to this headline">¶</a></h2>
 <p>This module provides a function that filters a data stream through a series
@@ -236,6 +236,91 @@ are approximate:</p>
 </tbody>
 </table>
 </div>
+<div class="section" id="module-asrc">
+<h2>module_asrc<a class="headerlink" href="#module-asrc" title="Permalink to this headline">¶</a></h2>
+<p>The ASRC module implements a function that performs a Asynchronous Sample
+Rate Conversion. The module delays the signal by five samples, or around
+100 us at 48 KHz. The maximum sample rate given assumes a single 50 MIPS
+thread soleley dedicated to this task.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="19%" />
+<col width="19%" />
+<col width="13%" />
+<col width="15%" />
+<col width="19%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td colspan="2">Functionality provided</td>
+<td colspan="3">Resources required</td>
+<td rowspan="2">Status</td>
+</tr>
+<tr class="row-even"><td>Channels</td>
+<td>Filter taps</td>
+<td>Thread cycles</td>
+<td>Max rate</td>
+<td>Memory</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>65</td>
+<td>120</td>
+<td>416 kHz</td>
+<td>630 B</td>
+<td>Implemented</td>
+</tr>
+<tr class="row-even"><td>2</td>
+<td>65</td>
+<td>240</td>
+<td>208 kHz</td>
+<td>710 B</td>
+<td>Implemented</td>
+</tr>
+<tr class="row-odd"><td>4</td>
+<td>65</td>
+<td>480</td>
+<td>104 kHz</td>
+<td>870 B</td>
+<td>Implemented</td>
+</tr>
+<tr class="row-even"><td>N</td>
+<td>65</td>
+<td>120 N</td>
+<td>416/N</td>
+<td>550+80N</td>
+<td>Implemented</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>257</td>
+<td>185</td>
+<td>270 kHz</td>
+<td>1400 B</td>
+<td>Implemented</td>
+</tr>
+<tr class="row-even"><td>2</td>
+<td>257</td>
+<td>370</td>
+<td>135 kHz</td>
+<td>1480 B</td>
+<td>Implemented</td>
+</tr>
+<tr class="row-odd"><td>4</td>
+<td>257</td>
+<td>740</td>
+<td>67 kHz</td>
+<td>1560 B</td>
+<td>Implemented</td>
+</tr>
+<tr class="row-even"><td>N</td>
+<td>257</td>
+<td>185 N</td>
+<td>270/N</td>
+<td>1320+80N</td>
+<td>Implemented</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 
 
@@ -250,11 +335,11 @@ are approximate:</p>
 <li class="toctree-l1 current"><a class="current reference internal" href="">DSP Filtering</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#module-cascading-biquad">module_cascading_biquad</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-fir">module_fir</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-asrc">module_asrc</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="biquad.html">module_cascading_biquad</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fir.html">Using FIR filters</a></li>
-<li class="toctree-l1"><a class="reference internal" href="asr.html">module_asr</a></li>
 </ul>
 
 <div id="searchbox" style="display: none;margin-bottom: 10px;">

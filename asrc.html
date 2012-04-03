@@ -1,0 +1,183 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>module_asr &mdash; Documentation  documentation</title>
+    <link rel="stylesheet" href="_static/xdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/xcomment.js"></script>
+    <link rel="top" title="Documentation  documentation" href="index.html" /> 
+
+<script>
+function setheight() {
+h1 = document.getElementById('d1').style.height;
+h2 = document.getElementById('d2').style.height;
+
+if (parseInt(h1) > parseInt(h2)) {
+document.getElementById('d2').style.height=h1 + "px";
+}
+else {
+document.getElementById('d1').style.height=h2 + "px";
+}
+
+}
+</script>
+</head>
+
+<body onload="setheight();">
+
+  
+
+    <div class="document" id='d1'>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+<div style="float: right">
+</div>
+
+            
+  <div class="section" id="module-asr">
+<h1>module_asr<a class="headerlink" href="#module-asr" title="Permalink to this headline">¶</a></h1>
+<p>The Asynchronous Sample Rate converter is capable of deleting sample values
+in random places in the input stream. This operation introduces harmoic
+distortion, but can be used when two asynchronous clocks provide data and
+you want to keep them in sync.</p>
+<p>The filtering function performs a low pass filter when inserting or
+deleting. The filtering function takes approximately 2.5 us per sample.
+Channels must be filtered independently, so a stereo stream will require 5
+us per sample. (all assuming a 50 MIPS thread). Hence a single thread at 50
+MIPS can filter around 8 streams at 48 KHz, or 2 streams at 192 KHz.</p>
+<div class="section" id="api">
+<h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="configuration-defines">
+<h3>Configuration defines<a class="headerlink" href="#configuration-defines" title="Permalink to this headline">¶</a></h3>
+<p><strong>ASRC_ORDER</strong></p>
+<blockquote>
+<div>This sets the number of samples over which to smooth the signal. The
+filter will be sqaure that size. Supported values are 8 (default)
+and 16. Higher values create less audible artifacts, but increase
+latency in the signal, and increase computational requirements; both
+linear.</div></blockquote>
+</div>
+<div class="section" id="types">
+<h3>Types<a class="headerlink" href="#types" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenstruct: Cannot find struct &#8220;asrcState&#8221; in doxygen xml output</p>
+</div>
+</div>
+<div class="section" id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;asrcInit&#8221; in doxygen xml output</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;asrcFilter&#8221; in doxygen xml output</p>
+</div>
+</div>
+<div class="section" id="example">
+<h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
+<p>A simple example on how to use it is shown below. <strong>to be provided</strong></p>
+<p>A more complex example has two input streams, and it will delete a sample
+on either stream when it runs ahead too far.</p>
+<div class="highlight-none"><div class="highlight"><pre>#define MAXDIST 4
+
+// This example is untested... Ought to be...
+void twoStreamExample(chanend inX, chanend inY, chanend outX, chanend outY) {
+    struct asrState asrStateX, asrStateY;
+    int sample, v, deleteOne;
+    int diff = 0;
+    asrInit(asrStateX);
+    asrInit(asrStateY);
+    while(1) {
+        select {
+        case inX :&gt; sample:
+            diff++;
+            deleteOne = diff &gt;= MAXDIST;
+            if (deleteOne) {
+                diff--;
+            }
+            v = asrDelete(sample, deleteOne, asrStateX);
+            if (!deleteOne) {
+                outX &lt;: v;
+            }
+            break;
+        case inY :&gt; sample:
+            diff--;
+            deleteOne = diff &lt;= -MAXDIST;
+            if (deleteOne) {
+                diff++;
+            }
+            v = asrDelete(sample, deleteOne, asrStateY);
+            if (!deleteOne) {
+                outY &lt;: v;
+            }
+            break;
+        }
+    }
+}
+</pre></div>
+</div>
+<div class="highlight-none"><div class="highlight"><pre>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" id='d2'>
+        <div class="sphinxsidebarwrapper">
+<h3><a href="index.html">Documentation</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="summary.html">DSP Filtering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="biquad.html">module_cascading_biquad</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fir.html">Using FIR filters</a></li>
+</ul>
+
+<div id="searchbox" style="display: none;margin-bottom: 10px;">
+  <h3>Search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+
+
+    <div class="footer">
+    </div>
+  </body>
+</html>
+
+
+

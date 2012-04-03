@@ -1,0 +1,214 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>DELETING A POINT &mdash; Documentation  documentation</title>
+    <link rel="stylesheet" href="_static/xdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/xcomment.js"></script>
+    <link rel="top" title="Documentation  documentation" href="index.html" /> 
+
+<script>
+function setheight() {
+h1 = document.getElementById('d1').style.height;
+h2 = document.getElementById('d2').style.height;
+
+if (parseInt(h1) > parseInt(h2)) {
+document.getElementById('d2').style.height=h1 + "px";
+}
+else {
+document.getElementById('d1').style.height=h2 + "px";
+}
+
+}
+</script>
+</head>
+
+<body onload="setheight();">
+
+  
+
+    <div class="document" id='d1'>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+<div style="float: right">
+</div>
+
+            
+  <div class="section" id="deleting-a-point">
+<h1>DELETING A POINT<a class="headerlink" href="#deleting-a-point" title="Permalink to this headline">¶</a></h1>
+<p>Step 0: no FIR - prior to delete</p>
+<blockquote>
+<div>NRP                                              WP</div></blockquote>
+<dl class="docutils">
+<dt>.......B.......B.......B.......B.......0.......1.......2.......3.......4.......-</dt>
+<dd>.......X........X........X........X........X........X........X........X........X.........</dd>
+</dl>
+<p>Step 1: only advance WP as normal - do not return points</p>
+<blockquote>
+<div>NRP                                              WP</div></blockquote>
+<dl class="docutils">
+<dt>.......B.......B.......B.......B.......0.......1.......2.......3.......4.......5.......-</dt>
+<dd>.......X........X........X........X........X........X........X........X........X.........</dd>
+</dl>
+<p>Step 2: 8 point active out of 65 point FIR, start from 7 for WP-10:</p>
+<blockquote>
+<div><blockquote>
+<div>NRP                                              WP</div></blockquote>
+<p>=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-+&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>....... .......B.......B.......B.......0.......1.......2.......3.......4.......5.......6.......-</dt>
+<dd>.......X........X........X........X........X........X........X........X........X.........</dd>
+</dl>
+<p>Step 3: 8 point active out of 65 point FIR, start from 6 for WP-10:</p>
+<blockquote>
+<div><blockquote>
+<div>NRP                                              WP</div></blockquote>
+<p>=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-+&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>....... ....... .......B.......B.......0.......1.......2.......3.......4.......5.......6.......7.......-</dt>
+<dd>.......X........X........X........X........X........X........X........X........X.........</dd>
+</dl>
+<p>...</p>
+<p>Step 7: 8 point active out of 65 point FIR, start from 2 for WP-10:</p>
+<blockquote>
+<div><blockquote>
+<div>NRP                                              WP</div></blockquote>
+<p>=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-+&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>....... ....... ....... ....... ....... ....... .......2.......3.......4.......5.......6.......7.......8.......9.......A.......B.......-</dt>
+<dd>.......X........X........X........X........X........X........X........X........X.........</dd>
+</dl>
+<p>Step 8: 8 point active out of 65 point FIR, start from 1 for WP-10:</p>
+<blockquote>
+<div><blockquote>
+<div>NRP                                              WP</div></blockquote>
+<p>=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-+&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>....... ....... ....... ....... ....... ....... ....... .......3.......4.......5.......6.......7.......8.......9.......A.......B.......C.......-</dt>
+<dd>.......X........X........X........X........X........X........X........X........X.........</dd>
+</dl>
+<p>Step 9: back to normal:</p>
+<blockquote>
+<div>NRP                                              WP</div></blockquote>
+<dl class="docutils">
+<dt>....... ....... ....... ....... ....... ....... ....... .......3.......4.......5.......6.......7.......8.......9.......A.......B.......C.......D.......-</dt>
+<dd>.......X........X........X........X........X........X........X........X........X.........</dd>
+</dl>
+</div>
+<div class="section" id="inserting-a-point">
+<h1>INSERTING A POINT<a class="headerlink" href="#inserting-a-point" title="Permalink to this headline">¶</a></h1>
+<p>Step 0: no FIR - prior to insert</p>
+<blockquote>
+<div>NRP                                              WP</div></blockquote>
+<p>.......B.......B.......B.......B.......0.......1.......2.......3.......4.......-</p>
+<p>Step 1: do not advance WP, return 1 point ahead of normal read point
+relative to non advanced WP:</p>
+<blockquote>
+<div><blockquote>
+<div>NRP                                              WP</div></blockquote>
+<p>=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-+&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>.......B.......B.......B.......B.......0.......1.......2.......3.......4.......-</dt>
+<dd>.......X......X......X......X......X......X......X......X......X...............</dd>
+</dl>
+<p>Step 2: 8 point active out of 65 point FIR, start from 1 on WP-9:</p>
+<blockquote>
+<div><blockquote>
+<div>NRP                                              WP</div></blockquote>
+<p>=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-+&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>....... .......B.......B.......B.......0.......1.......2.......3.......4.......5.......-</dt>
+<dd>.......X......X......X......X......X......X......X......X......X...............</dd>
+</dl>
+<p>Step 3: 8 point active out of 65 point FIR, start from 2 on WP-9:</p>
+<blockquote>
+<div><blockquote>
+<div>NRP                                              WP</div></blockquote>
+<p>=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-+&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>....... ....... .......B.......B.......0.......1.......2.......3.......4.......5.......6.......-</dt>
+<dd>.......X......X......X......X......X......X......X......X......X...............</dd>
+</dl>
+<p>...</p>
+<p>Step 8: 8 point active out of 65 point FIR, start from 7 on WP-9:</p>
+<blockquote>
+<div><blockquote>
+<div>NRP                                              WP</div></blockquote>
+<p>=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-+&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=&#8212;&#8212;-=</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>....... ....... ....... ....... ....... ....... ....... .......3.......4.......5.......6.......7.......8.......9.......A.......B.......-</dt>
+<dd>.......X......X......X......X......X......X......X......X......X...............</dd>
+</dl>
+<p>Step 9: return to normal:</p>
+<blockquote>
+<div>NRP                                              WP</div></blockquote>
+<dl class="docutils">
+<dt>....... ....... ....... ....... ....... ....... ....... .......3.......4.......5.......6.......7.......8.......9.......A.......B.......C.......-</dt>
+<dd>.......X......X......X......X......X......X......X......X......X...............</dd>
+</dl>
+</div>
+
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" id='d2'>
+        <div class="sphinxsidebarwrapper">
+<h3><a href="index.html">Documentation</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="summary.html">DSP Filtering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="biquad.html">module_cascading_biquad</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fir.html">Using FIR filters</a></li>
+</ul>
+
+<div id="searchbox" style="display: none;margin-bottom: 10px;">
+  <h3>Search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+
+
+    <div class="footer">
+    </div>
+  </body>
+</html>
+
+
+
