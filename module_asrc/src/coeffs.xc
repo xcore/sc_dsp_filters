@@ -1011,11 +1011,10 @@ int asrcCoeffs[ASRC_ORDER * ASRC_UPSAMPLING + 1] = {
     -5390,
     -2689,
     0
-}
+};
 
 #else
 
 #error "Unsupported combination of ASRC_ORDER and ASRC_UPSAMPLING. See coeffs.xc for supported combination(s)"
 
-#endif
 #endif

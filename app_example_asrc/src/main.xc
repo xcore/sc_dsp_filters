@@ -88,7 +88,7 @@ int main(void) {
             ofdiff = fdiff;
             tdiff = osdiff - sdiff;
             osdiff = sdiff;
-            printintln(d);
+            printintln(k);
 //            printf("%2d %9d %9d %9d %8d %8d %8d %3d.%03d\n", i, ar[w-ASRC_ORDER/2-2], ar[w-ASRC_ORDER/2-2]-k, k, fdiff, sdiff, tdiff, t1/100, (t1%100)*10);
         } else {
 //            printf("%2d                                                          %3d.%03d\n", i, t1/100, (t1%100)*10);
