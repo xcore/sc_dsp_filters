@@ -80,6 +80,13 @@ filter will be sqaure that size. Supported values are 8 (default)
 and 16. Higher values create less audible artifacts, but increase
 latency in the signal, and increase computational requirements; both
 linear.</div></blockquote>
+<p><strong>ASRC_UPSAMPLING</strong></p>
+<blockquote>
+<div>This sets the number of steps over which the lost/added sample is
+generated. The higher the value, the lower the noise floor. However,
+higher valus require more memory (the coefficient array is of size
+ASRC_ORDER * ASRC_UPSAMPLING), and it reduces the number of samples
+that can be inserted or deleted. Supported values are 125 (default)</div></blockquote>
 </div>
 <div class="section" id="types">
 <h3>Types<a class="headerlink" href="#types" title="Permalink to this headline">¶</a></h3>
@@ -167,7 +174,39 @@ int <tt class="descname">asrcFilter</tt><big>(</big>int<em>&nbsp;sample</em>, in
 assumption are that both input stream and wordclock are stable, and almost
 the same frequency. A sample is added or deleted when the stream runs out
 of sync too far with the word clock</p>
-<div class="highlight-none"><div class="highlight"><pre>
+<div class="highlight-none"><div class="highlight"><pre>#define MAXDIFF 4
+
+// This example is untested... Ought to be...
+void reclockExample(port inLRclk, chanend inSlave, chanend outSlave) {
+    struct asrcState asrcState;
+    int sample, v;
+    int diff = 0;
+    int lr = 0;
+    asrcInit(asrcState);
+    while(1) {
+        select {
+        case inLRclk when pinsneq(lr) :&gt; lr:
+            if (lr) {
+                if (diff &gt; MAXDIFF) {                   // Difference too large - add a sample in other stream.
+                    v = asrcFilter(0, 1, asrcState);
+                    outSlave &lt;: v;
+                } else {
+                    diff++;
+                }
+            }
+            break;
+        case inSlave :&gt; sample:
+            if (diff &lt; -MAXDIFF) {                     // Difference too large - remove a sample in this stream.
+                (void) asrcFilter(sample, -1, asrcState);
+            } else {
+                v = asrcFilter(sample, 0, asrcState);
+                outSlave &lt;: v;
+                diff--;
+            }
+            break;
+        }
+    }
+}
 </pre></div>
 </div>
 <p>A more complex example has two input streams, and it will delete a sample
@@ -175,34 +214,29 @@ on either stream when it runs ahead too far.</p>
 <div class="highlight-none"><div class="highlight"><pre>#define MAXDIST 4
 
 // This example is untested... Ought to be...
-void twoStreamExample(chanend inX, chanend inY, chanend outX, chanend outY) {
-    struct asrState asrStateX, asrStateY;
-    int sample, v, deleteOne;
+void twoStreamExample(chanend inMaster, chanend inSlave, chanend outMaster, chanend outSlave) {
+    struct asrcState asrcState;
+    int sample, v;
     int diff = 0;
-    asrInit(asrStateX);
-    asrInit(asrStateY);
+    asrcInit(asrcState);
     while(1) {
         select {
-        case inX :&gt; sample:
-            diff++;
-            deleteOne = diff &gt;= MAXDIST;
-            if (deleteOne) {
-                diff--;
-            }
-            v = asrDelete(sample, deleteOne, asrStateX);
-            if (!deleteOne) {
-                outX &lt;: v;
-            }
-            break;
-        case inY :&gt; sample:
-            diff--;
-            deleteOne = diff &lt;= -MAXDIST;
-            if (deleteOne) {
+        case inMaster :&gt; sample:
+            outMaster &lt;: v;
+            if (diff &gt; MAXDIST) {                   // Difference too large - add a sample in other stream.
+                v = asrcFilter(0, 1, asrcState);
+                outSlave &lt;: v;
+            } else {
                 diff++;
             }
-            v = asrDelete(sample, deleteOne, asrStateY);
-            if (!deleteOne) {
-                outY &lt;: v;
+            break;
+        case inSlave :&gt; sample:
+            if (diff &lt; -MAXDIST) {                  // Difference too large - remove a sample in this stream.
+                (void) asrcFilter(sample, -1, asrcState);
+            } else {
+                v = asrcFilter(sample, 0, asrcState);
+                outSlave &lt;: v;
+                diff--;
             }
             break;
         }
