@@ -1,16 +1,10 @@
-module_asr
-..........
+module_asrc
+...........
 
 The Asynchronous Sample Rate converter is capable of deleting or inserting
 samples in arbitrary places in the input stream. This operation introduces
 harmoic distortion, but can be used when two asynchronous clocks provide
 data that must be kept in sync.
-
-The filtering function performs a low pass filter when inserting or
-deleting. The filtering function takes approximately 2.5 us per sample.
-Channels must be filtered independently, so a stereo stream will require 5
-us per sample. (all assuming a 50 MIPS thread). Hence a single thread at 50
-MIPS can filter around 8 streams at 48 KHz, or 2 streams at 192 KHz.
 
 API
 ---
@@ -86,3 +80,18 @@ on either stream when it runs ahead too far.
   :start-after: //::twoexample
   :end-before: //::
 
+.. _sc_dsp_filters_asrc_performance:
+
+Performance
+'''''''''''
+
+The filtering function performs a low pass filter when inserting or
+deleting, which requires computation linear in ASRC_ORDER. As an
+indication, when ASRC_ORDER = 8, the worst case execution path is a double
+call to the filter function (to delete a sample), this takes 210 thread
+cycles or 4.2 us at 50 MIPS. This is worst case is guaranteed to happen
+only once, and typical performance when filtering is 140 thread cycles or
+2.8 us at 50 MIPS. Hence, if this function is called just prior to
+delivering an audio sample in a 48 KHz stream, then a single thread at 50
+MIPS can filter around 4 streams at 48 KHz, or 2 streams at 96 KHz. If used
+in a system with a small buffer, 7 streams can be processed
