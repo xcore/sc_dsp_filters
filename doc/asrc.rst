@@ -27,6 +27,14 @@ Configuration defines
     latency in the signal, and increase computational requirements; both
     linear.
 
+**ASRC_UPSAMPLING**
+
+    This sets the number of steps over which the lost/added sample is
+    generated. The higher the value, the lower the noise floor. However,
+    higher valus require more memory (the coefficient array is of size
+    ASRC_ORDER * ASRC_UPSAMPLING), and it reduces the number of samples
+    that can be inserted or deleted. Supported values are 125 (default)
+
 
 Types
 '''''
@@ -48,7 +56,7 @@ assumption are that both input stream and wordclock are stable, and almost
 the same frequency. A sample is added or deleted when the stream runs out
 of sync too far with the word clock
 
-.. literalinclude:: app_example_asr/src/main.xc
+.. literalinclude:: app_example_asrc/src/main.xc
   :start-after: //::reclockexample
   :end-before: //::
 
@@ -56,7 +64,7 @@ of sync too far with the word clock
 A more complex example has two input streams, and it will delete a sample
 on either stream when it runs ahead too far.
 
-.. literalinclude:: app_example_asr/src/main.xc
+.. literalinclude:: app_example_asrc/src/main.xc
   :start-after: //::twoexample
   :end-before: //::
 
