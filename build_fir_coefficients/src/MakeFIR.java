@@ -103,7 +103,8 @@ class MakeFIR {
                 " -hamming             Hamming window (default)\n" +
                 " -hann                Hann window\n\n" +
                 " -n taps              Number of taps - should be odd\n" +
-                " -fs freq             Sample frequency, default 48000\n\n" +
+                " -fs freq             Sample frequency, default 48000\n" +
+                " -one N               Integer value representing 1.0, default 1<<24\n\n" +
                 " -xc sourceFileName   name of source file, default coeffs.xc\n" +
                 " -csv csvFileName     name of csv file, default response.csv\n\n" +
                 "One of -low, -high, -bp, or -bs must be specified\n" +
@@ -135,6 +136,7 @@ class MakeFIR {
         double [] c = null, e = null;
         int win = HAMMING;
         int type = 0;
+        long scale = (1<<24);
         int N = 0;
         double sum = 0;
         double tsum = 0;
@@ -165,11 +167,14 @@ class MakeFIR {
                 e = new double[N+160];
                 if ((N&1) == 0) {
                     System.err.println("N must be odd\n");
+                    usage();
                 }
             } else if (args[i].equals("-xc")) {
                 sourceFile = args[++i];
             } else if (args[i].equals("-csv")) {
                 responseCurve = args[++i];
+            } else if (args[i].equals("-one")) {
+                scale = Long.parseLong(args[++i]);
             } else {
                 System.err.print("Option " + args[i]);
                 usage();
@@ -224,6 +229,8 @@ class MakeFIR {
                 ++k;
             } else if (args[k].equals("-n")) {
                 ++k;
+            } else if (args[k].equals("-one")) {
+                ++k;
             } else if (args[k].equals("-xc")) {
                 ++k;
             } else if (args[k].equals("-csv")) {
@@ -236,7 +243,8 @@ class MakeFIR {
             if (i >= N || i < 0) {
                 sum += sqr(e[i+80]);
             } else {
-                sum += sqr(e[i+80] - c[i]);
+                double roundedci = Math.floor(c[i] * scale + 0.5) / scale;
+                sum += sqr(e[i+80] - roundedci);
             }
             tsum += sqr(e[i+80]);
         }
@@ -250,7 +258,7 @@ class MakeFIR {
         fdXC.print("//Generated code - do not edit.\n\n" +
                    "int coeff[" + N + "] = {\n");
         for( i = 0; i < N; i++) {
-            fdXC.print( " " + ((int) Math.floor(c[i] * (1<<24) + 0.5)) + ", // "+ c[i] +" \n"); 
+            fdXC.print( " " + ((int) Math.floor(c[i] * scale + 0.5)) + ", // "+ c[i] +" \n"); 
         }
         fdXC.print( "};\n");
 
@@ -266,8 +274,9 @@ class MakeFIR {
             
             for(i = 0; i < N; i++) {
                 double o = omega/fs * 2 * pi;
-                sumr += c[i] * Math.cos(i*o);
-                sumi += c[i] * Math.sin(i*o);
+                double roundedci = Math.floor(c[i] * scale + 0.5) / scale;
+                sumr += roundedci * Math.cos(i*o);
+                sumi += roundedci * Math.sin(i*o);
             }
             mag = Math.sqrt(sumi*sumi + sumr*sumr);
             fdCSV.print(omega + "," + mag + "," + (20*Math.log10(mag)) + "\n");
