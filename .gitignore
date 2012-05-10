@@ -16,3 +16,9 @@ doc/.sources
 doc/.linked_dirs
 doc/index.pdf
 doc/_build/
+doc/index.aux
+doc/index.idx
+doc/index.log
+doc/index.out
+doc/index.tex
+doc/index.toc

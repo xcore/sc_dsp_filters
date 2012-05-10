@@ -7,12 +7,14 @@
 #define ASRC_ORDER 8
 #endif
 
+#ifndef ASRC_UPSAMPLING
+#define ASRC_UPSAMPLING 125
+#endif
+
 #if (ASRC_ORDER == 8)
 #define ASRC_ARRAY 16
-#define DIVIDE_SHIFT 3
 #elif (ASRC_ORDER == 16)
 #define ASRC_ARRAY 32
-#define DIVIDE_SHIFT 4
 #else
 #error "Undefined ASRC_ORDER, set to 8 or 16"
 #endif

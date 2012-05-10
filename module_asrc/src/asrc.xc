@@ -46,15 +46,15 @@ int asrcFilter(int sample, int diff, struct asrcState &state) {
     state.wr = wr;
 
     if(diff == -1) {
-        state.firStart = ASRC_ORDER-1;
+        state.firStart = ASRC_UPSAMPLING-1;
         state.state = DELETING;
         return 0;
     }
 
-    if(state.state == NEITHER) {                   // Negative firStart: no FIR running.
+    if(state.state == NEITHER) {            // No FIR running.
         int rd = wr - (ASRC_ORDER>>1) - 2;  // Pick normal read point
-        rd &= (ASRC_ARRAY-1);
-        return state.buffer[rd];               // and return value
+        rd &= (ASRC_ARRAY-1);               // Weap read pointer
+        return state.buffer[rd];            // and return value
     } else if (state.state == DELETING) {
         rd = state.wr + ASRC_ARRAY - ASRC_ORDER - 2;
         rd &= (ASRC_ARRAY-1);
@@ -68,7 +68,7 @@ int asrcFilter(int sample, int diff, struct asrcState &state) {
         rd &= (ASRC_ARRAY-1);
         firPosition = state.firStart;
         state.firStart++;
-        if (state.firStart == ASRC_ORDER) {
+        if (state.firStart == ASRC_UPSAMPLING) {
             state.state = NEITHER;
         }
     }
@@ -77,11 +77,11 @@ int asrcFilter(int sample, int diff, struct asrcState &state) {
 #pragma loop unroll
     for(int i = 0; i < ASRC_ORDER; i++) {
         {h,l} = macs(asrcCoeffs[firPosition], state.buffer[rd], h, l);
-        firPosition += ASRC_ORDER;
+        firPosition += ASRC_UPSAMPLING;
         rd++;
         rd &= (ASRC_ARRAY-1);
     }
-    h = h << (8+DIVIDE_SHIFT) | l >> (24 - DIVIDE_SHIFT);
+    h = h << 8 | l >> 24;
 
     return h;
 }
