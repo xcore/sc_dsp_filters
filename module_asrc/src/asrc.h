@@ -45,7 +45,8 @@ void asrcInit(struct asrcState &state);
  * called on every sample. Set the parameter ``diff`` to -1 or +1 to
  * indicate that a sample is to be deleted or inserted. Anytime that this
  * function is called with a request to delete or insert a sample, at least
- * eight calls should be made without deletion for the signal to stabilise.
+ * ASRC_UPSAMPLING calls should be made with ``diff`` set to 0 for the
+ * signal to stabilise.
  *
  * When ``diff`` is -1, the return value of the function should be ignored,
  * this accounts for the deleted sample. When ``diff`` is +1, the input

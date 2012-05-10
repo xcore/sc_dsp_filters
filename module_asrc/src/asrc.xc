@@ -5,6 +5,7 @@
 
 #include <xs1.h>
 #include <stdio.h>
+#include <print.h>
 #include "asrc.h"
 #include "coeffs.h"
 
@@ -77,7 +78,13 @@ int asrcFilter(int sample, int diff, struct asrcState &state) {
 #pragma loop unroll
     for(int i = 0; i < ASRC_ORDER; i++) {
         {h,l} = macs(asrcCoeffs[firPosition], state.buffer[rd], h, l);
-        firPosition += ASRC_UPSAMPLING;
+        if (i < (ASRC_ORDER >> 1)-1) {
+            firPosition += ASRC_UPSAMPLING;
+        } else if (i == (ASRC_ORDER >> 1)-1) {
+            firPosition = (ASRC_UPSAMPLING * (ASRC_ORDER-1)) - firPosition;
+        } else {
+            firPosition -= ASRC_UPSAMPLING;
+        }
         rd++;
         rd &= (ASRC_ARRAY-1);
     }
