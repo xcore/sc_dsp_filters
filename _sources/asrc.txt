@@ -87,37 +87,56 @@ Performance
 
 The filtering function performs a low pass filter when inserting or
 deleting, which requires computation linear in ASRC_ORDER. As an
-indication, when ASRC_ORDER = 8, the worst case execution path is a double
-call to the filter function (to delete a sample), this takes 210 thread
-cycles or 4.2 us at 50 MIPS. This is worst case is guaranteed to happen
-only once, and typical performance when filtering is 140 thread cycles or
-2.8 us at 50 MIPS. Hence, if this function is called just prior to
+indication, when ASRC_ORDER = 4, the worst case execution path is a double
+call to the filter function (to delete a sample), this takes 170 thread
+cycles or 3.4 us at 50 MIPS. This worst case is guaranteed to happen
+only once per deleted sample, and typical performance when filtering is 110 thread cycles or
+2.2 us at 50 MIPS. Hence, if this function is called just prior to
 delivering an audio sample in a 48 KHz stream, then a single thread at 50
-MIPS can filter around 4 streams at 48 KHz, or 2 streams at 96 KHz. If used
-in a system with a small buffer, 7 streams can be processed
+MIPS can filter around 6 streams at 48 KHz, or 3 streams at 96 KHz. If used
+in a system with a small buffer, 9 streams can be processed.
 
 Distortion
 ''''''''''
 
 Below we show the frequency analysyis of a 1KHz sinewave that has been
-slowed down or sped up using the Asynchronous Sample Rate converter.
-Upsampling rates of 64 and 125 only are shown, and only filters with
-order 8. This experiment used a 48 KHz sample rate at 24 bits.
+slowed down or sped up using the Asynchronous Sample Rate converter with
+upsampling rates of between 64 and 250, and filters of orders 4, 8, and 16.
+This experiment used a 48 KHz sample rate at 24 bits. Note that order 16
+does not make a significant difference; for many applications order 4 or 8
+will be sufficient.
 
-.. figure:: 1kHz-8-64-slow.*
+.. figure:: 1kHz-8-125-fast.*
    :width: 100%
 
-   ASRC_ORDER=8 ASRC_UPSAMPLING=64 conversion to slightly slower clock
+   ASRC_ORDER=8 ASRC_UPSAMPLING=125 conversion to slightly faster clock, 2KByte coefficients
 
 
 .. figure:: 1kHz-8-125-slow.*
    :width: 100%
 
-   ASRC_ORDER=8 ASRC_UPSAMPLING=125 conversion to slightly slower clock
+   ASRC_ORDER=8 ASRC_UPSAMPLING=125 conversion to slightly slower clock, 2KByte coefficients
 
-
-.. figure:: 1kHz-8-125-fast.*
+.. figure:: 1kHz-8-64-slow.*
    :width: 100%
 
-   ASRC_ORDER=8 ASRC_UPSAMPLING=125 conversion to slightly faster clock
+   ASRC_ORDER=8 ASRC_UPSAMPLING=64 conversion to slightly slower clock, 1KByte coefficients
+
+
+.. figure:: 1kHz-16-64-slow.*
+   :width: 100%
+
+   ASRC_ORDER=16 ASRC_UPSAMPLING=64 conversion to slightly slower clock, 2KByte coefficients
+
+
+.. figure:: 1kHz-4-125-slow.*
+   :width: 100%
+
+   ASRC_ORDER=4 ASRC_UPSAMPLING=125 conversion to slightly slower clock, 1KByte coefficients
+
+
+.. figure:: 1kHz-4-250-slow.*
+   :width: 100%
+
+   ASRC_ORDER=4 ASRC_UPSAMPLING=250 conversion to slightly slower clock, 2KByte coefficients
 

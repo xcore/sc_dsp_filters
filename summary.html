@@ -240,11 +240,12 @@ are approximate:</p>
 <h2>module_asrc<a class="headerlink" href="#module-asrc" title="Permalink to this headline">¶</a></h2>
 <p>The ASRC module implements a function that performs a Asynchronous Sample
 Rate Conversion. The module delays the signal by five samples, or around
-100 us at 48 KHz. The noise floor is below -100db, with some noise near the
-main signal at -70db. The maximum sample rate given assumes a single 50
+100 us at 48 KHz. The noise floor is below -90db, with some noise near the
+main frequency at -60db. The maximum sample rate given assumes a single 50
 MIPS thread soleley dedicated to this task. Performance figures given here
 are absolute worst case - see the performance discussion in the API section
-(<a class="reference internal" href="asrc.html#sc-dsp-filters-asrc-performance"><span>Performance</span></a>) for a more detailed explanation.</p>
+(<a class="reference internal" href="asrc.html#sc-dsp-filters-asrc-performance"><span>Performance</span></a>) for a more detailed explanation.
+Multi-channel can also be optimised significantly.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="14%" />
@@ -329,6 +330,38 @@ are absolute worst case - see the performance discussion in the API section
 <td>210 N</td>
 <td>238/N</td>
 <td>1550+80N</td>
+<td>Implemented</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>4</td>
+<td>250</td>
+<td>170</td>
+<td>294 kHz</td>
+<td>2630 B</td>
+<td>Implemented</td>
+</tr>
+<tr class="row-even"><td>2</td>
+<td>4</td>
+<td>250</td>
+<td>340</td>
+<td>147 kHz</td>
+<td>2710 B</td>
+<td>Implemented</td>
+</tr>
+<tr class="row-odd"><td>4</td>
+<td>4</td>
+<td>250</td>
+<td>680</td>
+<td>73 kHz</td>
+<td>2870 B</td>
+<td>Implemented</td>
+</tr>
+<tr class="row-even"><td>N</td>
+<td>4</td>
+<td>250</td>
+<td>170 N</td>
+<td>294/N</td>
+<td>2550+80N</td>
 <td>Implemented</td>
 </tr>
 </tbody>
