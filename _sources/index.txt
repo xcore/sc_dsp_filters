@@ -7,5 +7,4 @@ Documentation
    biquad.rst
    fir.rst
    asrc.rst
-   asrc-internal.rst
 

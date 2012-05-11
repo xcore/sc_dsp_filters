@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>module_asr &mdash; Documentation  documentation</title>
+    <title>module_asrc &mdash; Documentation  documentation</title>
     <link rel="stylesheet" href="_static/xdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -23,7 +23,6 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/xcomment.js"></script>
     <link rel="top" title="Documentation  documentation" href="index.html" />
-    <link rel="next" title="Internals of module_asrc" href="asrc-internal.html" />
     <link rel="prev" title="Using FIR filters" href="fir.html" /> 
 
 <script>
@@ -53,22 +52,15 @@ document.getElementById('d1').style.height=h2 + "px";
 <div style="float: right">
 <a href="fir.html"
                         title="previous chapter"> &lt&lt </a>
-<a href="asrc-internal.html"
-                        title="next chapter"> &gt&gt </a></p>
 </div>
 
             
-  <div class="section" id="module-asr">
-<h1>module_asr<a class="headerlink" href="#module-asr" title="Permalink to this headline">¶</a></h1>
-<p>The Asynchronous Sample Rate converter is capable of deleting sample values
-in random places in the input stream. This operation introduces harmoic
-distortion, but can be used when two asynchronous clocks provide data and
-you want to keep them in sync.</p>
-<p>The filtering function performs a low pass filter when inserting or
-deleting. The filtering function takes approximately 2.5 us per sample.
-Channels must be filtered independently, so a stereo stream will require 5
-us per sample. (all assuming a 50 MIPS thread). Hence a single thread at 50
-MIPS can filter around 8 streams at 48 KHz, or 2 streams at 192 KHz.</p>
+  <div class="section" id="module-asrc">
+<h1>module_asrc<a class="headerlink" href="#module-asrc" title="Permalink to this headline">¶</a></h1>
+<p>The Asynchronous Sample Rate converter is capable of deleting or inserting
+samples in arbitrary places in the input stream. This operation introduces
+harmoic distortion, but can be used when two asynchronous clocks provide
+data that must be kept in sync.</p>
 <div class="section" id="api">
 <h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="configuration-defines">
@@ -76,17 +68,31 @@ MIPS can filter around 8 streams at 48 KHz, or 2 streams at 192 KHz.</p>
 <p><strong>ASRC_ORDER</strong></p>
 <blockquote>
 <div>This sets the number of samples over which to smooth the signal. The
-filter will be sqaure that size. Supported values are 8 (default)
-and 16. Higher values create less audible artifacts, but increase
-latency in the signal, and increase computational requirements; both
-linear.</div></blockquote>
+filter will be sqaure that size. Higher values create less audible
+artifacts, but increase latency in the signal, and increase
+computational requirements; both linear.</div></blockquote>
 <p><strong>ASRC_UPSAMPLING</strong></p>
 <blockquote>
 <div>This sets the number of steps over which the lost/added sample is
 generated. The higher the value, the lower the noise floor. However,
 higher valus require more memory (the coefficient array is of size
 ASRC_ORDER * ASRC_UPSAMPLING), and it reduces the number of samples
-that can be inserted or deleted. Supported values are 125 (default)</div></blockquote>
+that can be inserted or deleted.</div></blockquote>
+<p>The default values for <tt class="docutils literal"><span class="pre">ASRC_ORDER</span></tt> and <tt class="docutils literal"><span class="pre">ASRC_UPSAMPLING</span></tt> are 8
+and 125. At present, the only other combination supported is 8 and 64. In
+order to support other combinations, compute the coefficients for a
+low-pass FIR filter (using the <tt class="docutils literal"><span class="pre">makefir</span></tt> program in this repo) with the
+following properties:</p>
+<ul class="simple">
+<li>Corner frequency: -low 24000</li>
+<li>Sampling rate: -fs <tt class="docutils literal"><span class="pre">48000</span> <span class="pre">*</span> <span class="pre">ASRC_UPSAMPLING</span></tt></li>
+<li>Number of taps: -n <tt class="docutils literal"><span class="pre">ASRC_UPSAMPLING</span> <span class="pre">*</span> <span class="pre">ASRC_ORDER</span> <span class="pre">+</span> <span class="pre">1</span></tt></li>
+<li>Scale value: -one <tt class="docutils literal"><span class="pre">16777216</span> <span class="pre">*</span> <span class="pre">ASRC_UPSAMPLING</span></tt></li>
+</ul>
+<p>Delete the second half of the generated values, (the filter will be
+symmetrical) so that you are left with
+<tt class="docutils literal"><span class="pre">(ASRC_UPSAMPLING</span> <span class="pre">*</span> <span class="pre">ASRC_ORDER)/2</span> <span class="pre">+</span> <span class="pre">1</span></tt>
+coefficients, and so that the last value of the array is <tt class="docutils literal"><span class="pre">16777216</span></tt>.</p>
 </div>
 <div class="section" id="types">
 <h3>Types<a class="headerlink" href="#types" title="Permalink to this headline">¶</a></h3>
@@ -147,7 +153,7 @@ void <tt class="descname">asrcInit</tt><big>(</big>struct <a class="reference in
 <dt id="asrcFilter">
 int <tt class="descname">asrcFilter</tt><big>(</big>int<em>&nbsp;sample</em>, int<em>&nbsp;diff</em>, struct <a class="reference internal" href="#asrcState" title="asrcState"><span>asrcState</span></a><em>&nbsp;&amp;state</em><big>)</big><a class="headerlink" href="#asrcFilter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function that produces a new sample, possibly interpolating.</p>
-<p>To be called on every sample. Set the parameter <tt class="docutils literal"><span class="pre">diff</span></tt> to -1 or +1 to indicate that a sample is to be deleted or inserted. Anytime that this function is called with a request to delete or insert a sample, at least eight calls should be made without deletion for the signal to stabilise.</p>
+<p>To be called on every sample. Set the parameter <tt class="docutils literal"><span class="pre">diff</span></tt> to -1 or +1 to indicate that a sample is to be deleted or inserted. Anytime that this function is called with a request to delete or insert a sample, at least ASRC_UPSAMPLING calls should be made with <tt class="docutils literal"><span class="pre">diff</span></tt> set to 0 for the signal to stabilise.</p>
 <p>When <tt class="docutils literal"><span class="pre">diff</span></tt> is -1, the return value of the function should be ignored, this accounts for the deleted sample. When <tt class="docutils literal"><span class="pre">diff</span></tt> is +1, the input sample to the function will be ignored, this accounts for the inserted sample.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -245,6 +251,38 @@ void twoStreamExample(chanend inMaster, chanend inSlave, chanend outMaster, chan
 </pre></div>
 </div>
 </div>
+<div class="section" id="performance">
+<span id="sc-dsp-filters-asrc-performance"></span><h3>Performance<a class="headerlink" href="#performance" title="Permalink to this headline">¶</a></h3>
+<p>The filtering function performs a low pass filter when inserting or
+deleting, which requires computation linear in ASRC_ORDER. As an
+indication, when ASRC_ORDER = 8, the worst case execution path is a double
+call to the filter function (to delete a sample), this takes 210 thread
+cycles or 4.2 us at 50 MIPS. This is worst case is guaranteed to happen
+only once, and typical performance when filtering is 140 thread cycles or
+2.8 us at 50 MIPS. Hence, if this function is called just prior to
+delivering an audio sample in a 48 KHz stream, then a single thread at 50
+MIPS can filter around 4 streams at 48 KHz, or 2 streams at 96 KHz. If used
+in a system with a small buffer, 7 streams can be processed</p>
+</div>
+<div class="section" id="distortion">
+<h3>Distortion<a class="headerlink" href="#distortion" title="Permalink to this headline">¶</a></h3>
+<p>Below we show the frequency analysyis of a 1KHz sinewave that has been
+slowed down or sped up using the Asynchronous Sample Rate converter.
+Upsampling rates of 64 and 125 only are shown, and only filters with
+order 8. This experiment used a 48 KHz sample rate at 24 bits.</p>
+<div class="figure">
+<img alt="_images/1kHz-8-64-slow.png" src="_images/1kHz-8-64-slow.png" style="width: 100%;" />
+<p class="caption">ASRC_ORDER=8 ASRC_UPSAMPLING=64 conversion to slightly slower clock</p>
+</div>
+<div class="figure">
+<img alt="_images/1kHz-8-125-slow.png" src="_images/1kHz-8-125-slow.png" style="width: 100%;" />
+<p class="caption">ASRC_ORDER=8 ASRC_UPSAMPLING=125 conversion to slightly slower clock</p>
+</div>
+<div class="figure">
+<img alt="_images/1kHz-8-125-fast.png" src="_images/1kHz-8-125-fast.png" style="width: 100%;" />
+<p class="caption">ASRC_ORDER=8 ASRC_UPSAMPLING=125 conversion to slightly faster clock</p>
+</div>
+</div>
 </div>
 </div>
 
@@ -260,17 +298,18 @@ void twoStreamExample(chanend inMaster, chanend inSlave, chanend outMaster, chan
 <li class="toctree-l1"><a class="reference internal" href="summary.html">DSP Filtering</a></li>
 <li class="toctree-l1"><a class="reference internal" href="biquad.html">module_cascading_biquad</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fir.html">Using FIR filters</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">module_asr</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="">module_asrc</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#api">API</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#configuration-defines">Configuration defines</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#types">Types</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#functions">Functions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#performance">Performance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#distortion">Distortion</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="asrc-internal.html">Internals of module_asrc</a></li>
 </ul>
 
 <div id="searchbox" style="display: none;margin-bottom: 10px;">

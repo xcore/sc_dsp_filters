@@ -241,8 +241,10 @@ are approximate:</p>
 <p>The ASRC module implements a function that performs a Asynchronous Sample
 Rate Conversion. The module delays the signal by five samples, or around
 100 us at 48 KHz. The noise floor is below -100db, with some noise near the
-main signal at -70db. The maximum sample rate given assumes a single 50 MIPS
-thread soleley dedicated to this task.</p>
+main signal at -70db. The maximum sample rate given assumes a single 50
+MIPS thread soleley dedicated to this task. Performance figures given here
+are absolute worst case - see the performance discussion in the API section
+(<a class="reference internal" href="asrc.html#sc-dsp-filters-asrc-performance"><span>Performance</span></a>) for a more detailed explanation.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="14%" />
@@ -268,33 +270,65 @@ thread soleley dedicated to this task.</p>
 <tr class="row-odd"><td>1</td>
 <td>8</td>
 <td>125</td>
-<td>120</td>
-<td>416 kHz</td>
-<td>4630 B</td>
+<td>210</td>
+<td>238 kHz</td>
+<td>2630 B</td>
 <td>Implemented</td>
 </tr>
 <tr class="row-even"><td>2</td>
 <td>8</td>
 <td>125</td>
-<td>240</td>
-<td>208 kHz</td>
-<td>4710 B</td>
+<td>420</td>
+<td>119 kHz</td>
+<td>2710 B</td>
 <td>Implemented</td>
 </tr>
 <tr class="row-odd"><td>4</td>
 <td>8</td>
 <td>125</td>
-<td>480</td>
-<td>104 kHz</td>
-<td>4870 B</td>
+<td>840</td>
+<td>56 kHz</td>
+<td>2870 B</td>
 <td>Implemented</td>
 </tr>
 <tr class="row-even"><td>N</td>
 <td>8</td>
 <td>125</td>
-<td>120 N</td>
-<td>416/N</td>
-<td>4550+80N</td>
+<td>210 N</td>
+<td>238/N</td>
+<td>2550+80N</td>
+<td>Implemented</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>8</td>
+<td>64</td>
+<td>210</td>
+<td>238 kHz</td>
+<td>1630 B</td>
+<td>Implemented</td>
+</tr>
+<tr class="row-even"><td>2</td>
+<td>8</td>
+<td>64</td>
+<td>420</td>
+<td>119 kHz</td>
+<td>1710 B</td>
+<td>Implemented</td>
+</tr>
+<tr class="row-odd"><td>4</td>
+<td>8</td>
+<td>64</td>
+<td>840</td>
+<td>56 kHz</td>
+<td>1870 B</td>
+<td>Implemented</td>
+</tr>
+<tr class="row-even"><td>N</td>
+<td>8</td>
+<td>64</td>
+<td>210 N</td>
+<td>238/N</td>
+<td>1550+80N</td>
 <td>Implemented</td>
 </tr>
 </tbody>
@@ -319,8 +353,7 @@ thread soleley dedicated to this task.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="biquad.html">module_cascading_biquad</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fir.html">Using FIR filters</a></li>
-<li class="toctree-l1"><a class="reference internal" href="asrc.html">module_asr</a></li>
-<li class="toctree-l1"><a class="reference internal" href="asrc-internal.html">Internals of module_asrc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="asrc.html">module_asrc</a></li>
 </ul>
 
 <div id="searchbox" style="display: none;margin-bottom: 10px;">

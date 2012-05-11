@@ -121,20 +121,30 @@ module_asrc
 The ASRC module implements a function that performs a Asynchronous Sample
 Rate Conversion. The module delays the signal by five samples, or around
 100 us at 48 KHz. The noise floor is below -100db, with some noise near the
-main signal at -70db. The maximum sample rate given assumes a single 50 MIPS
-thread soleley dedicated to this task.
+main signal at -70db. The maximum sample rate given assumes a single 50
+MIPS thread soleley dedicated to this task. Performance figures given here
+are absolute worst case - see the performance discussion in the API section
+(:ref:`sc_dsp_filters_asrc_performance`) for a more detailed explanation.
 
 +-------------------------------+----------------------------------+-------------+
 | Functionality provided        | Resources required               | Status      |
 +----------+-------+------------+-------------+---------+----------+             |
 | Channels | Order | Upsampling |Thread cycles|Max rate | Memory   |             |
 +----------+-------+------------+-------------+---------+----------+-------------+
-| 1        | 8     | 125        | 120         | 416 kHz | 4630 B   | Implemented |
+| 1        | 8     | 125        | 210         | 238 kHz | 2630 B   | Implemented |
 +----------+-------+------------+-------------+---------+----------+-------------+
-| 2        | 8     | 125        | 240         | 208 kHz | 4710 B   | Implemented |
+| 2        | 8     | 125        | 420         | 119 kHz | 2710 B   | Implemented |
 +----------+-------+------------+-------------+---------+----------+-------------+
-| 4        | 8     | 125        | 480         | 104 kHz | 4870 B   | Implemented |
+| 4        | 8     | 125        | 840         | 56 kHz  | 2870 B   | Implemented |
 +----------+-------+------------+-------------+---------+----------+-------------+
-| N        | 8     | 125        | 120 N       | 416/N   | 4550+80N | Implemented |
+| N        | 8     | 125        | 210 N       | 238/N   | 2550+80N | Implemented |
++----------+-------+------------+-------------+---------+----------+-------------+
+| 1        | 8     | 64         | 210         | 238 kHz | 1630 B   | Implemented |
++----------+-------+------------+-------------+---------+----------+-------------+
+| 2        | 8     | 64         | 420         | 119 kHz | 1710 B   | Implemented |
++----------+-------+------------+-------------+---------+----------+-------------+
+| 4        | 8     | 64         | 840         | 56 kHz  | 1870 B   | Implemented |
++----------+-------+------------+-------------+---------+----------+-------------+
+| N        | 8     | 64         | 210 N       | 238/N   | 1550+80N | Implemented |
 +----------+-------+------------+-------------+---------+----------+-------------+
 
