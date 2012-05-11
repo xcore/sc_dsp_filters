@@ -95,3 +95,29 @@ only once, and typical performance when filtering is 140 thread cycles or
 delivering an audio sample in a 48 KHz stream, then a single thread at 50
 MIPS can filter around 4 streams at 48 KHz, or 2 streams at 96 KHz. If used
 in a system with a small buffer, 7 streams can be processed
+
+Distortion
+''''''''''
+
+Below we show the frequency analysyis of a 1KHz sinewave that has been
+slowed down or sped up using the Asynchronous Sample Rate converter.
+Upsampling rates of 64 and 125 only are shown, and only filters with
+order 8. This experiment used a 48 KHz sample rate at 24 bits.
+
+.. figure:: 1kHz-8-64-slow.*
+   :width: 100%
+
+   ASRC_ORDER=8 ASRC_UPSAMPLING=64 conversion to slightly slower clock
+
+
+.. figure:: 1kHz-8-125-slow.*
+   :width: 100%
+
+   ASRC_ORDER=8 ASRC_UPSAMPLING=125 conversion to slightly slower clock
+
+
+.. figure:: 1kHz-8-125-fast.*
+   :width: 100%
+
+   ASRC_ORDER=8 ASRC_UPSAMPLING=125 conversion to slightly faster clock
+
