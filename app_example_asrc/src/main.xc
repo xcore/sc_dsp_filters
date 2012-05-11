@@ -66,7 +66,7 @@ int main(void) {
 
     asrcInit(asrcState);
     t :> t0;
-    for(int i = 0; i < 485; i++) {
+    for(int i = 0; i < 483; i++) {
         int d = sineWave[cntr%48];
         int k;
         int deleteOne = i == 13;
@@ -74,9 +74,11 @@ int main(void) {
         
         k = asrcFilter(d, deleteOne?-1:insertOne?+1:0, asrcState);
 //        ar[w++] = d;
-        if (!deleteOne && i > 4) {
+        if (!deleteOne && i > 2) {
             t :> t1;
             t1 -= t0;
+            printintln(t1);
+            printstr(" ");
             printintln(k);
             t :> t0;
         }

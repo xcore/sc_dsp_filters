@@ -11,7 +11,9 @@
 #define ASRC_UPSAMPLING 125
 #endif
 
-#if (ASRC_ORDER == 8)
+#if (ASRC_ORDER == 4)
+#define ASRC_ARRAY 8
+#elif (ASRC_ORDER == 8)
 #define ASRC_ARRAY 16
 #elif (ASRC_ORDER == 16)
 #define ASRC_ARRAY 32

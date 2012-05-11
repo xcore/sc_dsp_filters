@@ -1,5 +1,5 @@
 #!/bin/bash
-make clean && make CLFLAGS=-DASRC_UPSAMPLING=64 || exit 1
+make clean && make CLFLAGS="-DASRC_UPSAMPLING=250 -DASRC_ORDER=4" || exit 1
 if true
 then
     xsim  bin/app_example_asrc.xe > s0
@@ -42,7 +42,7 @@ samples0ppm=`cat 0ppm | wc -l`
 ppm100ppm=$((1000000/$samples100ppm))
 ppm50ppm=$((1000000/$samples50ppm))
 
-base=1kHz-8-64-slow
+base=1kHz-4-250-slow
 
 gnuplot << EOF
 set xrange [10:24000]
