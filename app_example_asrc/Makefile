@@ -1,6 +1,6 @@
 TARGET = XK-1
 APP_NAME =
-XCC_FLAGS = -O2
+XCC_FLAGS = -O2 $(CLFLAGS)
 USED_MODULES = module_asrc
 
 #=============================================================================

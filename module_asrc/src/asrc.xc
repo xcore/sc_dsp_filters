@@ -23,7 +23,6 @@ void asrcInit(struct asrcState &state) {
 }
 
 #pragma unsafe arrays
-
 int asrcFilter(int sample, int diff, struct asrcState &state) {
     int wr;
     int h = 0;

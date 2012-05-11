@@ -54,44 +54,31 @@ int sineWave[48] = {
     -2189866,
 };
 
-int printall = 0;
 
 int ar[100];
 
 int main(void) {
     struct asrcState asrcState;
     int cntr = 0;
-    int fdiff, ofdiff = 0;
-    int sdiff, osdiff = 0, tdiff;
     int ok = 0;
     timer t;
     int t0, t1;
-    int w = 15;
+
     asrcInit(asrcState);
-    printf("Nm     Input Difference   Output FrstDiff ScndDiff ThrdDiff Time(us)\n");
-    for(int i = 0; i < 48000; i++) {
+    t :> t0;
+    for(int i = 0; i < 485; i++) {
         int d = sineWave[cntr%48];
         int k;
-        int deleteOne = (i % 1000) == 500;
-        int insertOne = 0;//i == 47;
+        int deleteOne = i == 13;
+        int insertOne = 0;//i == 13; 
         
-        t :> t0;
-        printall = i >=24 && i <= 29;
         k = asrcFilter(d, deleteOne?-1:insertOne?+1:0, asrcState);
 //        ar[w++] = d;
-        t :> t1;
-        t1 -= t0;
-        if (!deleteOne) {
-            fdiff = ok - k;
-            ok = k;
-            sdiff = fdiff - ofdiff;
-            ofdiff = fdiff;
-            tdiff = osdiff - sdiff;
-            osdiff = sdiff;
+        if (!deleteOne && i > 4) {
+            t :> t1;
+            t1 -= t0;
             printintln(k);
-//            printf("%2d %9d %9d %9d %8d %8d %8d %3d.%03d\n", i, ar[w-ASRC_ORDER/2-2], ar[w-ASRC_ORDER/2-2]-k, k, fdiff, sdiff, tdiff, t1/100, (t1%100)*10);
-        } else {
-//            printf("%2d                                                          %3d.%03d\n", i, t1/100, (t1%100)*10);
+            t :> t0;
         }
         if (deleteOne) {
             cntr ++;
