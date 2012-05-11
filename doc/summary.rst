@@ -120,11 +120,12 @@ module_asrc
 
 The ASRC module implements a function that performs a Asynchronous Sample
 Rate Conversion. The module delays the signal by five samples, or around
-100 us at 48 KHz. The noise floor is below -100db, with some noise near the
-main signal at -70db. The maximum sample rate given assumes a single 50
+100 us at 48 KHz. The noise floor is below -90db, with some noise near the
+main frequency at -60db. The maximum sample rate given assumes a single 50
 MIPS thread soleley dedicated to this task. Performance figures given here
 are absolute worst case - see the performance discussion in the API section
 (:ref:`sc_dsp_filters_asrc_performance`) for a more detailed explanation.
+Multi-channel can also be optimised significantly.
 
 +-------------------------------+----------------------------------+-------------+
 | Functionality provided        | Resources required               | Status      |
@@ -146,5 +147,13 @@ are absolute worst case - see the performance discussion in the API section
 | 4        | 8     | 64         | 840         | 56 kHz  | 1870 B   | Implemented |
 +----------+-------+------------+-------------+---------+----------+-------------+
 | N        | 8     | 64         | 210 N       | 238/N   | 1550+80N | Implemented |
++----------+-------+------------+-------------+---------+----------+-------------+
+| 1        | 4     | 250        | 170         | 294 kHz | 2630 B   | Implemented |
++----------+-------+------------+-------------+---------+----------+-------------+
+| 2        | 4     | 250        | 340         | 147 kHz | 2710 B   | Implemented |
++----------+-------+------------+-------------+---------+----------+-------------+
+| 4        | 4     | 250        | 680         | 73 kHz  | 2870 B   | Implemented |
++----------+-------+------------+-------------+---------+----------+-------------+
+| N        | 4     | 250        | 170 N       | 294/N   | 2550+80N | Implemented |
 +----------+-------+------------+-------------+---------+----------+-------------+
 
