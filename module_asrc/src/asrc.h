@@ -8,7 +8,7 @@
 #endif
 
 #ifndef ASRC_UPSAMPLING
-#define ASRC_UPSAMPLING 125
+#define ASRC_UPSAMPLING 128
 #endif
 
 #if (ASRC_ORDER == 4)
