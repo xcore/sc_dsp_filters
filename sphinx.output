@@ -31,8 +31,12 @@ writing output... [ 83%] index
 writing output... [100%] summary
 
 writing additional files... genindex search
-copying images... [ 50%] 100ppm-2K.png
-copying images... [100%] 100ppm-1K.png
+copying images... [ 16%] 100ppm-128-s.png
+copying images... [ 33%] 100ppm-256-s.png
+copying images... [ 50%] 100ppm-64-s.png
+copying images... [ 66%] 100ppm-128-c.png
+copying images... [ 83%] 100ppm-256-c.png
+copying images... [100%] 100ppm-64-c.png
 
 copying static files... done
 dumping search index... done
