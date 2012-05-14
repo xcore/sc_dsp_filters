@@ -58,31 +58,40 @@ document.getElementById('d1').style.height=h2 + "px";
   <div class="section" id="module-asrc">
 <h1>module_asrc<a class="headerlink" href="#module-asrc" title="Permalink to this headline">¶</a></h1>
 <p>The Asynchronous Sample Rate converter is capable of deleting or inserting
-samples in arbitrary places in the input stream. This operation introduces
-harmoic distortion, but can be used when two asynchronous clocks provide
-data that must be kept in sync.</p>
+samples in arbitrary places in the input stream. This operation can be used
+when an incoming signal has to be synchronised with a local clock.
+By nature this operation introduces harmonic distortion that can be
+minimised by setting the filter to a high upsampling rate and high order.</p>
 <div class="section" id="api">
 <h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="configuration-defines">
 <h3>Configuration defines<a class="headerlink" href="#configuration-defines" title="Permalink to this headline">¶</a></h3>
 <p><strong>ASRC_ORDER</strong></p>
 <blockquote>
-<div>This sets the number of samples over which to smooth the signal. The
-filter will be sqaure that size. Higher values create less audible
-artifacts, but increase latency in the signal, and increase
-computational requirements; both linear.</div></blockquote>
+<div>This sets the number of samples over which to smooth the signal. A
+higher value creates less audible artifacts, but increases latency and
+computational requirements linearly.</div></blockquote>
 <p><strong>ASRC_UPSAMPLING</strong></p>
 <blockquote>
 <div>This sets the number of steps over which the lost/added sample is
-generated. The higher the value, the lower the noise floor. However,
-higher valus require more memory (the coefficient array is of size
+generated. The filter can only insert or delete a sample once during
+the upsampling period. The higher the value, the lower the noise floor.
+Higher values require more memory (the coefficient array is of size
 ASRC_ORDER * ASRC_UPSAMPLING), and it reduces the number of samples
 that can be inserted or deleted.</div></blockquote>
 <p>The default values for <tt class="docutils literal"><span class="pre">ASRC_ORDER</span></tt> and <tt class="docutils literal"><span class="pre">ASRC_UPSAMPLING</span></tt> are 8
-and 125. At present, the only other combination supported is 8 and 64. In
-order to support other combinations, compute the coefficients for a
+and 125. For each combination a table of coefficients is required. Tables
+are defined as part of the module (in <tt class="docutils literal"><span class="pre">coeffs.xc</span></tt>) for the following combinations:</p>
+<ul class="simple">
+<li>4 and 125</li>
+<li>4 and 250</li>
+<li>8 and 64</li>
+<li>8 and 125</li>
+<li>16 and 64</li>
+</ul>
+<p>To support other combinations, compute the coefficients for a
 low-pass FIR filter (using the <tt class="docutils literal"><span class="pre">makefir</span></tt> program in this repo) with the
-following properties:</p>
+following parameters:</p>
 <ul class="simple">
 <li>Corner frequency: -low 24000</li>
 <li>Sampling rate: -fs <tt class="docutils literal"><span class="pre">48000</span> <span class="pre">*</span> <span class="pre">ASRC_UPSAMPLING</span></tt></li>
@@ -90,9 +99,9 @@ following properties:</p>
 <li>Scale value: -one <tt class="docutils literal"><span class="pre">16777216</span> <span class="pre">*</span> <span class="pre">ASRC_UPSAMPLING</span></tt></li>
 </ul>
 <p>Delete the second half of the generated values, (the filter will be
-symmetrical) so that you are left with
-<tt class="docutils literal"><span class="pre">(ASRC_UPSAMPLING</span> <span class="pre">*</span> <span class="pre">ASRC_ORDER)/2</span> <span class="pre">+</span> <span class="pre">1</span></tt>
-coefficients, and so that the last value of the array is <tt class="docutils literal"><span class="pre">16777216</span></tt>.</p>
+symmetrical) so that you are left with <tt class="docutils literal"><span class="pre">(ASRC_UPSAMPLING</span> <span class="pre">*</span> <span class="pre">ASRC_ORDER)/2</span> <span class="pre">+</span>
+<span class="pre">1</span></tt> coefficients, and so that the last value of the array is <tt class="docutils literal"><span class="pre">16777216</span></tt>.
+Add this array to an appropriate <tt class="docutils literal"><span class="pre">#elif</span></tt> in <tt class="docutils literal"><span class="pre">coeffs.xc</span></tt></p>
 </div>
 <div class="section" id="types">
 <h3>Types<a class="headerlink" href="#types" title="Permalink to this headline">¶</a></h3>
@@ -135,7 +144,7 @@ int <tt class="descname">buffer</tt><a class="headerlink" href="#asrcState.buffe
 <dt id="asrcInit">
 void <tt class="descname">asrcInit</tt><big>(</big>struct <a class="reference internal" href="#asrcState" title="asrcState"><span>asrcState</span></a><em>&nbsp;&amp;state</em><big>)</big><a class="headerlink" href="#asrcInit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function that initialises the asynchronous sample rate converter.</p>
-<p>This resets the state.</p>
+<p>This resets the state and should be called once for each <tt class="docutils literal"><span class="pre">struct</span> <span class="pre">acrcState</span></tt> declared.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -153,7 +162,7 @@ void <tt class="descname">asrcInit</tt><big>(</big>struct <a class="reference in
 <dt id="asrcFilter">
 int <tt class="descname">asrcFilter</tt><big>(</big>int<em>&nbsp;sample</em>, int<em>&nbsp;diff</em>, struct <a class="reference internal" href="#asrcState" title="asrcState"><span>asrcState</span></a><em>&nbsp;&amp;state</em><big>)</big><a class="headerlink" href="#asrcFilter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function that produces a new sample, possibly interpolating.</p>
-<p>To be called on every sample. Set the parameter <tt class="docutils literal"><span class="pre">diff</span></tt> to -1 or +1 to indicate that a sample is to be deleted or inserted. Anytime that this function is called with a request to delete or insert a sample, at least ASRC_UPSAMPLING calls should be made with <tt class="docutils literal"><span class="pre">diff</span></tt> set to 0 for the signal to stabilise.</p>
+<p>To be called on every sample. Set the parameter <tt class="docutils literal"><span class="pre">diff</span></tt> to -1 or +1 to indicate that a sample is to be deleted or inserted. Anytime that this function is called with a request to delete or insert a sample, at least ASRC_UPSAMPLING+1 calls should be made with <tt class="docutils literal"><span class="pre">diff</span></tt> set to 0 for the interpolation to complete.</p>
 <p>When <tt class="docutils literal"><span class="pre">diff</span></tt> is -1, the return value of the function should be ignored, this accounts for the deleted sample. When <tt class="docutils literal"><span class="pre">diff</span></tt> is +1, the input sample to the function will be ignored, this accounts for the inserted sample.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -166,7 +175,7 @@ int <tt class="descname">asrcFilter</tt><big>(</big>int<em>&nbsp;sample</em>, in
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">an interpolated sample value. To be ifnored if <tt class="docutils literal"><span class="pre">diff</span></tt> is -1.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">an interpolated sample value. To be ignored if <tt class="docutils literal"><span class="pre">diff</span></tt> is -1.</p>
 </td>
 </tr>
 </tbody>
@@ -260,16 +269,16 @@ call to the filter function (to delete a sample), this takes 170 thread
 cycles or 3.4 us at 50 MIPS. This worst case is guaranteed to happen
 only once per deleted sample, and typical performance when filtering is 110 thread cycles or
 2.2 us at 50 MIPS. Hence, if this function is called just prior to
-delivering an audio sample in a 48 KHz stream, then a single thread at 50
-MIPS can filter around 6 streams at 48 KHz, or 3 streams at 96 KHz. If used
-in a system with a small buffer, 9 streams can be processed.</p>
+delivering an audio sample in a 48 kHz stream, then a single thread at 50
+MIPS can filter around 6 streams at 48 kHz, or 3 streams at 96 kHz. If used
+in a system with a small buffer, 9 streams can be processed at 48 kHz.</p>
 </div>
 <div class="section" id="distortion">
 <h3>Distortion<a class="headerlink" href="#distortion" title="Permalink to this headline">¶</a></h3>
-<p>Below we show the frequency analysyis of a 1KHz sinewave that has been
+<p>Below we show the frequency analysyis of a 1kHz sinewave that has been
 slowed down or sped up using the Asynchronous Sample Rate converter with
 upsampling rates of between 64 and 250, and filters of orders 4, 8, and 16.
-This experiment used a 48 KHz sample rate at 24 bits. Note that order 16
+This experiment used a 48 kHz sample rate at 24 bits. Note that order 16
 does not make a significant difference; for many applications order 4 or 8
 will be sufficient.</p>
 <div class="figure">

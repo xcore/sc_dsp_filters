@@ -122,7 +122,7 @@ can be designed by domain experts.</p>
 <div class="section" id="module-cascading-biquad">
 <h2>module_cascading_biquad<a class="headerlink" href="#module-cascading-biquad" title="Permalink to this headline">¶</a></h2>
 <p>This module provides a function that filters a data stream through a series
-of N biquads. The input data is in 8.24 format, a sign bit, seven bits
+of N Biquads. The input data is in 8.24 format, a sign bit, seven bits
 before the binary point, and 24 bits behind the binary point. Assuming a
 single 50 MIPS thread:</p>
 <table border="1" class="docutils">
@@ -242,17 +242,16 @@ are approximate:</p>
 Rate Conversion. The module delays the signal by five samples, or around
 100 us at 48 KHz. The noise floor is below -90db, with some noise near the
 main frequency at -60db. The maximum sample rate given assumes a single 50
-MIPS thread soleley dedicated to this task. Performance figures given here
+MIPS thread solely dedicated to this task. Performance figures given here
 are absolute worst case - see the performance discussion in the API section
-(<a class="reference internal" href="asrc.html#sc-dsp-filters-asrc-performance"><span>Performance</span></a>) for a more detailed explanation.
-Multi-channel can also be optimised significantly.</p>
+(<a class="reference internal" href="asrc.html#sc-dsp-filters-asrc-performance"><span>Performance</span></a>) for a more detailed explanation.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="14%" />
-<col width="9%" />
-<col width="16%" />
+<col width="10%" />
+<col width="10%" />
+<col width="17%" />
 <col width="18%" />
-<col width="12%" />
+<col width="13%" />
 <col width="14%" />
 <col width="18%" />
 </colgroup>
@@ -261,7 +260,7 @@ Multi-channel can also be optimised significantly.</p>
 <td colspan="3">Resources required</td>
 <td rowspan="2">Status</td>
 </tr>
-<tr class="row-even"><td>Channels</td>
+<tr class="row-even"><td>Chans</td>
 <td>Order</td>
 <td>Upsampling</td>
 <td>Thread cycles</td>
@@ -366,6 +365,9 @@ Multi-channel can also be optimised significantly.</p>
 </tr>
 </tbody>
 </table>
+<p>This implementation optimises per-sample latency. If throughput is
+important then a multi-channel version can be implemented that
+simultaneously operates on all channels, reducing overhead.</p>
 </div>
 </div>
 

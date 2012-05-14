@@ -2,9 +2,10 @@ module_asrc
 ...........
 
 The Asynchronous Sample Rate converter is capable of deleting or inserting
-samples in arbitrary places in the input stream. This operation introduces
-harmoic distortion, but can be used when two asynchronous clocks provide
-data that must be kept in sync.
+samples in arbitrary places in the input stream. This operation can be used
+when an incoming signal has to be synchronised with a local clock.
+By nature this operation introduces harmonic distortion that can be
+minimised by setting the filter to a high upsampling rate and high order.
 
 API
 ---
@@ -15,25 +16,37 @@ Configuration defines
 
 **ASRC_ORDER**
 
-    This sets the number of samples over which to smooth the signal. The
-    filter will be sqaure that size. Higher values create less audible
-    artifacts, but increase latency in the signal, and increase
-    computational requirements; both linear.
+    This sets the number of samples over which to smooth the signal. A
+    higher value creates less audible artifacts, but increases latency and
+    computational requirements linearly.
 
 **ASRC_UPSAMPLING**
 
     This sets the number of steps over which the lost/added sample is
-    generated. The higher the value, the lower the noise floor. However,
-    higher valus require more memory (the coefficient array is of size
+    generated. The filter can only insert or delete a sample once during
+    the upsampling period. The higher the value, the lower the noise floor.
+    Higher values require more memory (the coefficient array is of size
     ASRC_ORDER * ASRC_UPSAMPLING), and it reduces the number of samples
     that can be inserted or deleted.
 
 
 The default values for ``ASRC_ORDER`` and ``ASRC_UPSAMPLING`` are 8
-and 125. At present, the only other combination supported is 8 and 64. In
-order to support other combinations, compute the coefficients for a
+and 125. For each combination a table of coefficients is required. Tables
+are defined as part of the module (in ``coeffs.xc``) for the following combinations:
+
+* 4 and 125
+
+* 4 and 250
+
+* 8 and 64
+
+* 8 and 125
+
+* 16 and 64
+
+To support other combinations, compute the coefficients for a
 low-pass FIR filter (using the ``makefir`` program in this repo) with the
-following properties:
+following parameters:
 
 * Corner frequency: -low 24000
 
@@ -44,9 +57,9 @@ following properties:
 * Scale value: -one ``16777216 * ASRC_UPSAMPLING``
 
 Delete the second half of the generated values, (the filter will be
-symmetrical) so that you are left with
-``(ASRC_UPSAMPLING * ASRC_ORDER)/2 + 1``
-coefficients, and so that the last value of the array is ``16777216``.
+symmetrical) so that you are left with ``(ASRC_UPSAMPLING * ASRC_ORDER)/2 +
+1`` coefficients, and so that the last value of the array is ``16777216``.
+Add this array to an appropriate ``#elif`` in ``coeffs.xc``
 
 Types
 '''''
@@ -92,17 +105,17 @@ call to the filter function (to delete a sample), this takes 170 thread
 cycles or 3.4 us at 50 MIPS. This worst case is guaranteed to happen
 only once per deleted sample, and typical performance when filtering is 110 thread cycles or
 2.2 us at 50 MIPS. Hence, if this function is called just prior to
-delivering an audio sample in a 48 KHz stream, then a single thread at 50
-MIPS can filter around 6 streams at 48 KHz, or 3 streams at 96 KHz. If used
-in a system with a small buffer, 9 streams can be processed.
+delivering an audio sample in a 48 kHz stream, then a single thread at 50
+MIPS can filter around 6 streams at 48 kHz, or 3 streams at 96 kHz. If used
+in a system with a small buffer, 9 streams can be processed at 48 kHz.
 
 Distortion
 ''''''''''
 
-Below we show the frequency analysyis of a 1KHz sinewave that has been
+Below we show the frequency analysyis of a 1kHz sinewave that has been
 slowed down or sped up using the Asynchronous Sample Rate converter with
 upsampling rates of between 64 and 250, and filters of orders 4, 8, and 16.
-This experiment used a 48 KHz sample rate at 24 bits. Note that order 16
+This experiment used a 48 kHz sample rate at 24 bits. Note that order 16
 does not make a significant difference; for many applications order 4 or 8
 will be sufficient.
 
