@@ -94,13 +94,6 @@ int asrcFilter(int sample, int diff, struct asrcState &state) {
 
 
 
-
-/** Interface to ASRC module that allows continuous interpolation. Two
- * functions must be called, one to insert a new sample into the buffer,
- * and one to obtain an interpolated sample in the buffer. The
- * interpolation always takes place over the last ASRC_ORDER inserted
- * samples
- */
 void asrcContinuousBuffer(int sample, struct asrcState &state) {
     int wr = state.wr;
     state.buffer[wr] = sample;
@@ -109,11 +102,10 @@ void asrcContinuousBuffer(int sample, struct asrcState &state) {
     state.wr = wr;
 }
 
-
-void asrcContinuousInterpolate(int frac, struct asrcState &state) {
+int asrcContinuousInterpolate(int frac, struct asrcState &state) {
     int rd = state.wr + ASRC_ARRAY - ASRC_ORDER - 1;
     int h = 0;
-    unsigned l = 0;
+    unsigned l = 0x00800000;
 #pragma loop unroll
     for(int i = 0; i < ASRC_ORDER; i++) {
         rd &= (ASRC_ARRAY-1);

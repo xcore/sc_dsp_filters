@@ -70,3 +70,33 @@ void asrcInit(struct asrcState &state);
  * \returns      an interpolated sample value. To be ignored if ``diff`` is -1.
  */
 int asrcFilter(int sample, int diff, struct asrcState &state);
+
+/** UNTESTED Continuous interface to ASRC: add a sample to the buffer. This must be
+ * called once for every input sample. Occasionally an extra or missing
+ * call to asrcContinuousInterpolate() compensates for the asynchronous
+ * nature
+ *
+ * \param sample current sample value.
+ *
+ * \param state  buffer structure containing past sample values for
+ *               interpolation
+ */
+void asrcContinuousBuffer(int sample, struct asrcState &state);
+
+/** UNTESTED Continous interface to ASRC: called once for each sample to be produced
+ * on the output stream. The value is computed given the previous
+ * ASRC_ORDER samples in the buffer that have been added with
+ * asrcContinuousBuffer(). An interpolated value is returned, notionally
+ * between ASRC_ORDER+1 and ASRC_ORDER samples in the past. A fractional
+ * value of 0.0 indicates sample ASRC_ORDER+1 in the past, 1.0 indicates
+ * ASRC_ORDER samples in the past, 0.5 a value exactly inbetween, etc.
+ *
+ * \param frac fractional sample - a number between 0 and 1 inclusive,
+ *             where 1 is represented by ASRC_UPSAMPLING.
+ *
+ * \param state  buffer structure containing past sample values for
+ *               interpolation
+ * 
+ * \returns the interpolated sample value.
+ */
+int asrcContinuousInterpolate(int frac, struct asrcState &state);
