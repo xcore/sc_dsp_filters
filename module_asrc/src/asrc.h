@@ -18,7 +18,7 @@
 #elif (ASRC_ORDER == 16)
 #define ASRC_ARRAY 32
 #else
-#error "Undefined ASRC_ORDER, set to 8 or 16"
+#error "Undefined ASRC_ORDER, set to 4, 8 or 16"
 #endif
 
 /** Structure that is used to store the state of the converter. One
@@ -36,7 +36,8 @@ struct asrcState {
 };
 
 /** Function that initialises the asynchronous sample rate converter. This
- * resets the state.
+ * resets the state and should be called once for each ``struct acrcState``
+ * declared.
  *
  * \param state buffer structure containing past sample values for
  *              interpolation
@@ -47,8 +48,8 @@ void asrcInit(struct asrcState &state);
  * called on every sample. Set the parameter ``diff`` to -1 or +1 to
  * indicate that a sample is to be deleted or inserted. Anytime that this
  * function is called with a request to delete or insert a sample, at least
- * ASRC_UPSAMPLING calls should be made with ``diff`` set to 0 for the
- * signal to stabilise.
+ * ASRC_UPSAMPLING+1 calls should be made with ``diff`` set to 0 for the
+ * interpolation to complete.
  *
  * When ``diff`` is -1, the return value of the function should be ignored,
  * this accounts for the deleted sample. When ``diff`` is +1, the input
@@ -57,15 +58,15 @@ void asrcInit(struct asrcState &state);
  *
  * \param sample current sample value. Ignored if ``diff`` is +1.
  * 
- * \param diff value to indicate that a sample shall be deleted or inserted
+ * \param diff   value to indicate that a sample shall be deleted or inserted
  *               from the stream. When -1, a value shall be deleted and the
  *               return value of this function should be ignored. When +1 a
  *               value shall be inserted into the stream, and the sample
  *               passed into the function will be ignored.
  *
- * \param state buffer structure containing past sample values for
- *              interpolation
+ * \param state  buffer structure containing past sample values for
+ *               interpolation
  *
- * \returns an interpolated sample value. To be ifnored if ``diff`` is -1.
+ * \returns      an interpolated sample value. To be ignored if ``diff`` is -1.
  */
 int asrcFilter(int sample, int diff, struct asrcState &state);
