@@ -10,6 +10,22 @@ minimised by setting the filter to a high upsampling rate and high order.
 API
 ---
 
+There are two interfaces to the ASRC module. The first interface is a
+simlpe interface that manages the deletion and insertion of samples at
+arbitrary places. After initialisation, a single function ``asrcFilter()``
+is called that takes care of buffer management and interpolation.
+
+The second interface is slightly more complex but enables continuous
+interpolation of a signal; but buffer management has to be taken care of by
+the caller: ``asrcContinuousBuffer()`` adds a sample to the buffer
+and ``asrcContinuousInterpolate()`` interpolates a sample given a
+fractional position. The fractional position is a number between 0 and 1
+inclusive. If, for example, the stream is too fast, the caller will
+increase the fractional position gradually, and when it reaches 1 an extra
+sample should be added to the buffer, and the fractional position be reset
+to 0. Similarly, rather than decreasing the fractional position to below
+zero, it should wrap back to 1 and an extra interpolation should take place.
+
 
 Configuration defines
 '''''''''''''''''''''
@@ -18,7 +34,8 @@ Configuration defines
 
     This sets the number of samples over which to smooth the signal. A
     higher value creates less audible artifacts, but increases latency and
-    computational requirements linearly.
+    computational requirements linearly. Must be a power of 2 to simplify
+    buffer management.
 
 **ASRC_UPSAMPLING**
 
@@ -26,21 +43,22 @@ Configuration defines
     generated. The filter can only insert or delete a sample once during
     the upsampling period. The higher the value, the lower the noise floor.
     Higher values require more memory (the coefficient array is of size
-    ASRC_ORDER * ASRC_UPSAMPLING), and it reduces the number of samples
-    that can be inserted or deleted.
+    ASRC_ORDER * ASRC_UPSAMPLING). ASRC_UPSAMPLING should be a power of 2
+    in order to simplify the fractional sample location used by
+    ``asrcContinuousInterpolate()``
 
 
 The default values for ``ASRC_ORDER`` and ``ASRC_UPSAMPLING`` are 8
-and 125. For each combination a table of coefficients is required. Tables
+and 128. For each combination a table of coefficients is required. Tables
 are defined as part of the module (in ``coeffs.xc``) for the following combinations:
 
-* 4 and 125
+* 4 and 256
 
-* 4 and 250
+* 4 and 128
+
+* 8 and 128
 
 * 8 and 64
-
-* 8 and 125
 
 * 16 and 64
 
@@ -48,9 +66,9 @@ To support other combinations, compute the coefficients for a
 low-pass FIR filter (using the ``makefir`` program in this repo) with the
 following parameters:
 
-* Corner frequency: -low 24000
+* Corner frequency: -low ``1``
 
-* Sampling rate: -fs ``48000 * ASRC_UPSAMPLING``
+* Sampling rate: -fs ``2 * ASRC_UPSAMPLING``
 
 * Number of taps: -n ``ASRC_UPSAMPLING * ASRC_ORDER + 1``
 
@@ -60,6 +78,8 @@ Delete the second half of the generated values, (the filter will be
 symmetrical) so that you are left with ``(ASRC_UPSAMPLING * ASRC_ORDER)/2 +
 1`` coefficients, and so that the last value of the array is ``16777216``.
 Add this array to an appropriate ``#elif`` in ``coeffs.xc``
+
+
 
 Types
 '''''
@@ -72,6 +92,10 @@ Functions
 .. doxygenfunction:: asrcInit
 
 .. doxygenfunction:: asrcFilter
+
+.. doxygenfunction:: asrcContinuousBuffer
+
+.. doxygenfunction:: asrcContinuousInterpolate
 
 Example
 '''''''
@@ -96,7 +120,7 @@ on either stream when it runs ahead too far.
 .. _sc_dsp_filters_asrc_performance:
 
 Performance
-'''''''''''
+-----------
 
 The filtering function performs a low pass filter when inserting or
 deleting, which requires computation linear in ASRC_ORDER. As an
@@ -110,46 +134,22 @@ MIPS can filter around 6 streams at 48 kHz, or 3 streams at 96 kHz. If used
 in a system with a small buffer, 9 streams can be processed at 48 kHz.
 
 Distortion
-''''''''''
+----------
 
 Below we show the frequency analysyis of a 1kHz sinewave that has been
-slowed down or sped up using the Asynchronous Sample Rate converter with
+sped up using the Asynchronous Sample Rate converter with
 upsampling rates of between 64 and 250, and filters of orders 4, 8, and 16.
-This experiment used a 48 kHz sample rate at 24 bits. Note that order 16
-does not make a significant difference; for many applications order 4 or 8
-will be sufficient.
+This experiment used a 48 kHz sample rate at 24 bits. Note that order 4
+will be sufficient for many applications.
 
-.. figure:: 1kHz-8-125-fast.*
+.. figure:: 100ppm-1K.*
    :width: 100%
 
-   ASRC_ORDER=8 ASRC_UPSAMPLING=125 conversion to slightly faster clock, 2KByte coefficients
+   conversion to slightly faster clock, 1KByte coefficients
 
 
-.. figure:: 1kHz-8-125-slow.*
+.. figure:: 100ppm-2K.*
    :width: 100%
 
-   ASRC_ORDER=8 ASRC_UPSAMPLING=125 conversion to slightly slower clock, 2KByte coefficients
-
-.. figure:: 1kHz-8-64-slow.*
-   :width: 100%
-
-   ASRC_ORDER=8 ASRC_UPSAMPLING=64 conversion to slightly slower clock, 1KByte coefficients
-
-
-.. figure:: 1kHz-16-64-slow.*
-   :width: 100%
-
-   ASRC_ORDER=16 ASRC_UPSAMPLING=64 conversion to slightly slower clock, 2KByte coefficients
-
-
-.. figure:: 1kHz-4-125-slow.*
-   :width: 100%
-
-   ASRC_ORDER=4 ASRC_UPSAMPLING=125 conversion to slightly slower clock, 1KByte coefficients
-
-
-.. figure:: 1kHz-4-250-slow.*
-   :width: 100%
-
-   ASRC_ORDER=4 ASRC_UPSAMPLING=250 conversion to slightly slower clock, 2KByte coefficients
+   conversion to slightly faster clock, 2KByte coefficients
 

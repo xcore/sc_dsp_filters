@@ -6,6 +6,8 @@ reading sources... [ 16%] asrc
 Rendering Doxygen struct asrcState
 Rendering Doxygen function void asrcInit
 Rendering Doxygen function int asrcFilter
+Rendering Doxygen function void asrcContinuousBuffer
+Rendering Doxygen function int asrcContinuousInterpolate
 reading sources... [ 33%] biquad
 Rendering Doxygen struct biquadState
 Rendering Doxygen struct coeff
@@ -29,12 +31,8 @@ writing output... [ 83%] index
 writing output... [100%] summary
 
 writing additional files... genindex search
-copying images... [ 16%] 1kHz-4-250-slow.png
-copying images... [ 33%] 1kHz-16-64-slow.png
-copying images... [ 50%] 1kHz-8-64-slow.png
-copying images... [ 66%] 1kHz-8-125-fast.png
-copying images... [ 83%] 1kHz-4-125-slow.png
-copying images... [100%] 1kHz-8-125-slow.png
+copying images... [ 50%] 100ppm-2K.png
+copying images... [100%] 100ppm-1K.png
 
 copying static files... done
 dumping search index... done

@@ -64,37 +64,53 @@ By nature this operation introduces harmonic distortion that can be
 minimised by setting the filter to a high upsampling rate and high order.</p>
 <div class="section" id="api">
 <h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<p>There are two interfaces to the ASRC module. The first interface is a
+simlpe interface that manages the deletion and insertion of samples at
+arbitrary places. After initialisation, a single function <tt class="docutils literal"><span class="pre">asrcFilter()</span></tt>
+is called that takes care of buffer management and interpolation.</p>
+<p>The second interface is slightly more complex but enables continuous
+interpolation of a signal; but buffer management has to be taken care of by
+the caller: <tt class="docutils literal"><span class="pre">asrcContinuousBuffer()</span></tt> adds a sample to the buffer
+and <tt class="docutils literal"><span class="pre">asrcContinuousInterpolate()</span></tt> interpolates a sample given a
+fractional position. The fractional position is a number between 0 and 1
+inclusive. If, for example, the stream is too fast, the caller will
+increase the fractional position gradually, and when it reaches 1 an extra
+sample should be added to the buffer, and the fractional position be reset
+to 0. Similarly, rather than decreasing the fractional position to below
+zero, it should wrap back to 1 and an extra interpolation should take place.</p>
 <div class="section" id="configuration-defines">
 <h3>Configuration defines<a class="headerlink" href="#configuration-defines" title="Permalink to this headline">¶</a></h3>
 <p><strong>ASRC_ORDER</strong></p>
 <blockquote>
 <div>This sets the number of samples over which to smooth the signal. A
 higher value creates less audible artifacts, but increases latency and
-computational requirements linearly.</div></blockquote>
+computational requirements linearly. Must be a power of 2 to simplify
+buffer management.</div></blockquote>
 <p><strong>ASRC_UPSAMPLING</strong></p>
 <blockquote>
 <div>This sets the number of steps over which the lost/added sample is
 generated. The filter can only insert or delete a sample once during
 the upsampling period. The higher the value, the lower the noise floor.
 Higher values require more memory (the coefficient array is of size
-ASRC_ORDER * ASRC_UPSAMPLING), and it reduces the number of samples
-that can be inserted or deleted.</div></blockquote>
+ASRC_ORDER * ASRC_UPSAMPLING). ASRC_UPSAMPLING should be a power of 2
+in order to simplify the fractional sample location used by
+<tt class="docutils literal"><span class="pre">asrcContinuousInterpolate()</span></tt></div></blockquote>
 <p>The default values for <tt class="docutils literal"><span class="pre">ASRC_ORDER</span></tt> and <tt class="docutils literal"><span class="pre">ASRC_UPSAMPLING</span></tt> are 8
-and 125. For each combination a table of coefficients is required. Tables
+and 128. For each combination a table of coefficients is required. Tables
 are defined as part of the module (in <tt class="docutils literal"><span class="pre">coeffs.xc</span></tt>) for the following combinations:</p>
 <ul class="simple">
-<li>4 and 125</li>
-<li>4 and 250</li>
+<li>4 and 256</li>
+<li>4 and 128</li>
+<li>8 and 128</li>
 <li>8 and 64</li>
-<li>8 and 125</li>
 <li>16 and 64</li>
 </ul>
 <p>To support other combinations, compute the coefficients for a
 low-pass FIR filter (using the <tt class="docutils literal"><span class="pre">makefir</span></tt> program in this repo) with the
 following parameters:</p>
 <ul class="simple">
-<li>Corner frequency: -low 24000</li>
-<li>Sampling rate: -fs <tt class="docutils literal"><span class="pre">48000</span> <span class="pre">*</span> <span class="pre">ASRC_UPSAMPLING</span></tt></li>
+<li>Corner frequency: -low <tt class="docutils literal"><span class="pre">1</span></tt></li>
+<li>Sampling rate: -fs <tt class="docutils literal"><span class="pre">2</span> <span class="pre">*</span> <span class="pre">ASRC_UPSAMPLING</span></tt></li>
 <li>Number of taps: -n <tt class="docutils literal"><span class="pre">ASRC_UPSAMPLING</span> <span class="pre">*</span> <span class="pre">ASRC_ORDER</span> <span class="pre">+</span> <span class="pre">1</span></tt></li>
 <li>Scale value: -one <tt class="docutils literal"><span class="pre">16777216</span> <span class="pre">*</span> <span class="pre">ASRC_UPSAMPLING</span></tt></li>
 </ul>
@@ -182,6 +198,47 @@ int <tt class="descname">asrcFilter</tt><big>(</big>int<em>&nbsp;sample</em>, in
 </table>
 </dd></dl>
 
+<dl class="function">
+<dt id="asrcContinuousBuffer">
+void <tt class="descname">asrcContinuousBuffer</tt><big>(</big>int<em>&nbsp;sample</em>, struct <a class="reference internal" href="#asrcState" title="asrcState"><span>asrcState</span></a><em>&nbsp;&amp;state</em><big>)</big><a class="headerlink" href="#asrcContinuousBuffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>UNTESTED Continuous interface to ASRC: add a sample to the buffer.</p>
+<p>This must be called once for every input sample. Occasionally an extra or missing call to <a class="reference internal" href="#asrcContinuousInterpolate" title="asrcContinuousInterpolate"><span>asrcContinuousInterpolate()</span></a> compensates for the asynchronous nature</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>sample</strong> &#8211; current sample value.</li>
+<li><strong>state</strong> &#8211; buffer structure containing past sample values for interpolation</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="asrcContinuousInterpolate">
+int <tt class="descname">asrcContinuousInterpolate</tt><big>(</big>int<em>&nbsp;frac</em>, struct <a class="reference internal" href="#asrcState" title="asrcState"><span>asrcState</span></a><em>&nbsp;&amp;state</em><big>)</big><a class="headerlink" href="#asrcContinuousInterpolate" title="Permalink to this definition">¶</a></dt>
+<dd><p>UNTESTED Continous interface to ASRC: called once for each sample to be produced on the output stream.</p>
+<p>The value is computed given the previous ASRC_ORDER samples in the buffer that have been added with <a class="reference internal" href="#asrcContinuousBuffer" title="asrcContinuousBuffer"><span>asrcContinuousBuffer()</span></a>. An interpolated value is returned, notionally between ASRC_ORDER+1 and ASRC_ORDER samples in the past. A fractional value of 0.0 indicates sample ASRC_ORDER+1 in the past, 1.0 indicates ASRC_ORDER samples in the past, 0.5 a value exactly inbetween, etc.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>frac</strong> &#8211; fractional sample - a number between 0 and 1 inclusive, where 1 is represented by ASRC_UPSAMPLING.</li>
+<li><strong>state</strong> &#8211; buffer structure containing past sample values for interpolation</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the interpolated sample value.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 <div class="section" id="example">
 <h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
@@ -260,8 +317,9 @@ void twoStreamExample(chanend inMaster, chanend inSlave, chanend outMaster, chan
 </pre></div>
 </div>
 </div>
+</div>
 <div class="section" id="performance">
-<span id="sc-dsp-filters-asrc-performance"></span><h3>Performance<a class="headerlink" href="#performance" title="Permalink to this headline">¶</a></h3>
+<span id="sc-dsp-filters-asrc-performance"></span><h2>Performance<a class="headerlink" href="#performance" title="Permalink to this headline">¶</a></h2>
 <p>The filtering function performs a low pass filter when inserting or
 deleting, which requires computation linear in ASRC_ORDER. As an
 indication, when ASRC_ORDER = 4, the worst case execution path is a double
@@ -274,37 +332,19 @@ MIPS can filter around 6 streams at 48 kHz, or 3 streams at 96 kHz. If used
 in a system with a small buffer, 9 streams can be processed at 48 kHz.</p>
 </div>
 <div class="section" id="distortion">
-<h3>Distortion<a class="headerlink" href="#distortion" title="Permalink to this headline">¶</a></h3>
+<h2>Distortion<a class="headerlink" href="#distortion" title="Permalink to this headline">¶</a></h2>
 <p>Below we show the frequency analysyis of a 1kHz sinewave that has been
-slowed down or sped up using the Asynchronous Sample Rate converter with
+sped up using the Asynchronous Sample Rate converter with
 upsampling rates of between 64 and 250, and filters of orders 4, 8, and 16.
-This experiment used a 48 kHz sample rate at 24 bits. Note that order 16
-does not make a significant difference; for many applications order 4 or 8
-will be sufficient.</p>
+This experiment used a 48 kHz sample rate at 24 bits. Note that order 4
+will be sufficient for many applications.</p>
 <div class="figure">
-<img alt="_images/1kHz-8-125-fast.png" src="_images/1kHz-8-125-fast.png" style="width: 100%;" />
-<p class="caption">ASRC_ORDER=8 ASRC_UPSAMPLING=125 conversion to slightly faster clock, 2KByte coefficients</p>
+<img alt="_images/100ppm-1K.png" src="_images/100ppm-1K.png" style="width: 100%;" />
+<p class="caption">conversion to slightly faster clock, 1KByte coefficients</p>
 </div>
 <div class="figure">
-<img alt="_images/1kHz-8-125-slow.png" src="_images/1kHz-8-125-slow.png" style="width: 100%;" />
-<p class="caption">ASRC_ORDER=8 ASRC_UPSAMPLING=125 conversion to slightly slower clock, 2KByte coefficients</p>
-</div>
-<div class="figure">
-<img alt="_images/1kHz-8-64-slow.png" src="_images/1kHz-8-64-slow.png" style="width: 100%;" />
-<p class="caption">ASRC_ORDER=8 ASRC_UPSAMPLING=64 conversion to slightly slower clock, 1KByte coefficients</p>
-</div>
-<div class="figure">
-<img alt="_images/1kHz-16-64-slow.png" src="_images/1kHz-16-64-slow.png" style="width: 100%;" />
-<p class="caption">ASRC_ORDER=16 ASRC_UPSAMPLING=64 conversion to slightly slower clock, 2KByte coefficients</p>
-</div>
-<div class="figure">
-<img alt="_images/1kHz-4-125-slow.png" src="_images/1kHz-4-125-slow.png" style="width: 100%;" />
-<p class="caption">ASRC_ORDER=4 ASRC_UPSAMPLING=125 conversion to slightly slower clock, 1KByte coefficients</p>
-</div>
-<div class="figure">
-<img alt="_images/1kHz-4-250-slow.png" src="_images/1kHz-4-250-slow.png" style="width: 100%;" />
-<p class="caption">ASRC_ORDER=4 ASRC_UPSAMPLING=250 conversion to slightly slower clock, 2KByte coefficients</p>
-</div>
+<img alt="_images/100ppm-2K.png" src="_images/100ppm-2K.png" style="width: 100%;" />
+<p class="caption">conversion to slightly faster clock, 2KByte coefficients</p>
 </div>
 </div>
 </div>
@@ -327,10 +367,10 @@ will be sufficient.</p>
 <li class="toctree-l3"><a class="reference internal" href="#types">Types</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#functions">Functions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#performance">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#distortion">Distortion</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#performance">Performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#distortion">Distortion</a></li>
 </ul>
 </li>
 </ul>
