@@ -9,7 +9,7 @@ do
         s)
             F=;;
     esac
-    if false
+    if true
     then
     for i in 0 1 2 3 4 5
     do
