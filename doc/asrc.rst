@@ -7,11 +7,9 @@ when an incoming signal has to be synchronised with a local clock.
 By nature this operation introduces harmonic distortion that can be
 minimised by setting the filter to a high upsampling rate and high order.
 
-API
----
 
 There are two interfaces to the ASRC module. The first interface is a
-simlpe interface that manages the deletion and insertion of samples at
+simple interface that manages the deletion and insertion of samples at
 arbitrary places. After initialisation, a single function ``asrcFilter()``
 is called that takes care of buffer management and interpolation.
 
@@ -26,6 +24,8 @@ sample should be added to the buffer, and the fractional position be reset
 to 0. Similarly, rather than decreasing the fractional position to below
 zero, it should wrap back to 1 and an extra interpolation should take place.
 
+General API
+-----------
 
 Configuration defines
 '''''''''''''''''''''
@@ -33,7 +33,7 @@ Configuration defines
 **ASRC_ORDER**
 
     This sets the number of samples over which to smooth the signal. A
-    higher value creates less audible artifacts, but increases latency and
+    higher value creates less audible artefacts, but increases latency and
     computational requirements linearly. Must be a power of 2 to simplify
     buffer management.
 
@@ -79,8 +79,6 @@ symmetrical) so that you are left with ``(ASRC_UPSAMPLING * ASRC_ORDER)/2 +
 1`` coefficients, and so that the last value of the array is ``16777216``.
 Add this array to an appropriate ``#elif`` in ``coeffs.xc``
 
-
-
 Types
 '''''
 
@@ -91,11 +89,14 @@ Functions
 
 .. doxygenfunction:: asrcInit
 
+
+Simple API
+----------
+           
+Functions
+'''''''''
+
 .. doxygenfunction:: asrcFilter
-
-.. doxygenfunction:: asrcContinuousBuffer
-
-.. doxygenfunction:: asrcContinuousInterpolate
 
 Example
 '''''''
@@ -120,7 +121,7 @@ on either stream when it runs ahead too far.
 .. _sc_dsp_filters_asrc_performance:
 
 Performance
------------
+'''''''''''
 
 The filtering function performs a low pass filter when inserting or
 deleting, which requires computation linear in ASRC_ORDER. As an
@@ -134,22 +135,77 @@ MIPS can filter around 6 streams at 48 kHz, or 3 streams at 96 kHz. If used
 in a system with a small buffer, 9 streams can be processed at 48 kHz.
 
 Distortion
-----------
+''''''''''
 
-Below we show the frequency analysyis of a 1kHz sinewave that has been
+Below we show the frequency analysis of a 1kHz sinewave that has been
 sped up using the Asynchronous Sample Rate converter with
 upsampling rates of between 64 and 250, and filters of orders 4, 8, and 16.
 This experiment used a 48 kHz sample rate at 24 bits. Note that order 4
 will be sufficient for many applications.
 
-.. figure:: 100ppm-1K.*
+.. figure:: 100ppm-256-s.*
    :width: 100%
 
-   conversion to slightly faster clock, 1KByte coefficients
+   conversion to slightly faster clock, 256 x upsampling
 
 
-.. figure:: 100ppm-2K.*
+.. figure:: 100ppm-128-s.*
    :width: 100%
 
-   conversion to slightly faster clock, 2KByte coefficients
+   conversion to slightly faster clock, 128 x upsampling
+
+
+.. figure:: 100ppm-64-s.*
+   :width: 100%
+
+   conversion to slightly faster clock, 64 x upsampling
+
+Continuous API
+--------------
+
+Functions
+'''''''''
+
+.. doxygenfunction:: asrcContinuousBuffer
+
+.. doxygenfunction:: asrcContinuousInterpolate
+
+Example
+'''''''
+
+
+Performance
+'''''''''''
+
+The interpolate function always performs a low pass filter,
+which requires computation linear in ASRC_ORDER. The Buffer function is to
+be called zero, twice, or once during this period; depending on whether the
+fraction went above one, below zero, or stayed between 0 and 1. As an
+indication, when ASRC_ORDER = 4, the worst case execution path is ...
+
+
+Distortion
+''''''''''
+
+Below we show the frequency analysis of a 1kHz sinewave that has been sped
+up using the Asynchronous Sample Rate converter using the *continuous*
+interface. Upsampling rates are between 64 and 250, and filters of orders
+4, 8, and 16. This experiment used a 48 kHz sample rate at 24 bits.
+
+.. figure:: 100ppm-256-c.*
+   :width: 100%
+
+   conversion to slightly faster clock, 256 x upsampling
+
+
+.. figure:: 100ppm-128-c.*
+   :width: 100%
+
+   conversion to slightly faster clock, 128 x upsampling
+
+
+.. figure:: 100ppm-64-c.*
+   :width: 100%
+
+   conversion to slightly faster clock, 64 x upsampling
 

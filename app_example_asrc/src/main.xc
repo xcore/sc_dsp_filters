@@ -7,49 +7,49 @@ int sineWave[48] = {
     0,
     2189866,
     4342263,
-    6420362,
-    8388607,
-    10213321,
-    11863283,
-    13310260,
-    14529495,
-    15500126,
-    16205546,
-    16633684,
-    16777216,
-    16633684,
-    16205546,
-    15500126,
-    14529495,
-    13310260,
-    11863283,
-    10213321,
+    6420363,
     8388608,
-    6420362,
+    10213322,
+    11863283,
+    13310260,
+    14529495,
+    15500126,
+    16205546,
+    16633685,
+    16777216,
+    16633685,
+    16205546,
+    15500126,
+    14529495,
+    13310260,
+    11863283,
+    10213322,
+    8388608,
+    6420363,
     4342263,
     2189866,
     0,
     -2189866,
     -4342263,
-    -6420362,
-    -8388607,
-    -10213321,
-    -11863283,
-    -13310260,
-    -14529495,
-    -15500126,
-    -16205546,
-    -16633684,
-    -16777216,
-    -16633684,
-    -16205546,
-    -15500126,
-    -14529495,
-    -13310260,
-    -11863283,
-    -10213321,
+    -6420363,
     -8388608,
-    -6420362,
+    -10213322,
+    -11863283,
+    -13310260,
+    -14529495,
+    -15500126,
+    -16205546,
+    -16633685,
+    -16777216,
+    -16633685,
+    -16205546,
+    -15500126,
+    -14529495,
+    -13310260,
+    -11863283,
+    -10213322,
+    -8388608,
+    -6420363,
     -4342263,
     -2189866,
 };
@@ -57,28 +57,26 @@ int sineWave[48] = {
 
 int ar[100];
 
-int main(void) {
+int delete_main(void) {
     struct asrcState asrcState;
     int cntr = 0;
-    int ok = 0;
     timer t;
     int t0, t1;
+    int offset = ASRC_ORDER>>1;
+    int total = 9601;
 
     asrcInit(asrcState);
     t :> t0;
-    for(int i = 0; i < 481 + (ASRC_ORDER>>1); i++) {
+    for(int i = 0; i < total + offset; i++) {
         int d = sineWave[cntr%48];
         int k;
         int deleteOne = i == 13;
         int insertOne = 0;//i == 13; 
         
         k = asrcFilter(d, deleteOne?-1:insertOne?+1:0, asrcState);
-//        ar[w++] = d;
-        if (!deleteOne && i > (ASRC_ORDER>>1)) {
+        if (!deleteOne && i > offset) {
             t :> t1;
             t1 -= t0;
-//            printintln(t1);
-//            printstr(" ");
             printintln(k);
             t :> t0;
         }
@@ -90,6 +88,50 @@ int main(void) {
             cntr ++;
         }
     }
+    return 0;
+}
+
+int continuous_main(void) {
+    struct asrcState asrcState;
+    int cntr = 0;
+    timer t;
+    int t0, t1;
+    int total = 9600;
+    int offset = ASRC_ORDER>>1;
+
+    asrcInit(asrcState);
+    t :> t0;
+    for(int i = 0; i < total + offset + 2; i++) {
+        int d = sineWave[cntr%48];
+        int k;
+        int fraction;
+        if (i > offset) {
+            fraction = ASRC_UPSAMPLING * (i - offset) / total;
+        } else {
+            fraction = 0;
+        }
+
+        asrcContinuousBuffer(d, asrcState);
+        k = asrcContinuousInterpolate(fraction, asrcState);
+        if (i > offset) {
+            t :> t1;
+            t1 -= t0;
+//            printintln(t1);
+//            printstr(" ");
+            printintln(k);
+            t :> t0;
+        }
+        cntr ++;
+    }
+    return 0;
+}
+
+int main(void) {
+#ifdef TEST_CONTINUOUS
+    continuous_main();
+#else
+    delete_main();
+#endif
     return 0;
 }
 
