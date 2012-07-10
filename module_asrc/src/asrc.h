@@ -3,6 +3,9 @@
 // University of Illinois/NCSA Open Source License posted in
 // LICENSE.txt and at <http://github.xcore.com/>
 
+/*! \file */
+
+
 #ifndef ASRC_ORDER
 #define ASRC_ORDER 8
 #endif
