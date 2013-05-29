@@ -89,6 +89,7 @@ int fir_Multithreading4(streaming chanend c, int h[], int x[], unsigned ntaps){
         par(int i=0;i<4;i++){firASM_DoubleData_multiThread(cd[i],hPtr[i],xPtr[i],ntaps/4);}
     }
 
+#if 0
     par {// Compiler workaround for XDE 11.2
        asm("" : : "r"(cd));
        asm("" : : "r"(cd));
@@ -97,6 +98,7 @@ int fir_Multithreading4(streaming chanend c, int h[], int x[], unsigned ntaps){
         disconnect(cd, 4);
         disconnect(cd, 4);
     }
+#endif
 return 0;
 }
 
@@ -121,6 +123,7 @@ int fir_Multithreading3(streaming chanend c, int h[], int x[], unsigned ntaps){
         par(int i=0;i<3;i++){firASM_DoubleData_multiThread(cd[i],hPtr[i],xPtr[i],ntaps/3);}
     }
 
+#if 0
     par {// Compiler workaround for XDE 11.2
        asm("" : : "r"(cd));
        asm("" : : "r"(cd));
@@ -129,6 +132,7 @@ int fir_Multithreading3(streaming chanend c, int h[], int x[], unsigned ntaps){
         disconnect(cd, 3);
         disconnect(cd, 3);
     }
+#endif
 return 0;
 }
 
@@ -153,6 +157,7 @@ int fir_Multithreading2(streaming chanend c, int h[], int x[], unsigned ntaps){
         par(int i=0;i<2;i++){firASM_DoubleData_multiThread(cd[i],hPtr[i],xPtr[i],ntaps/2);}
     }
 
+#if 0
     par {// Compiler workaround for XDE 11.2
        asm("" : : "r"(cd));
        asm("" : : "r"(cd));
@@ -161,6 +166,7 @@ int fir_Multithreading2(streaming chanend c, int h[], int x[], unsigned ntaps){
         disconnect(cd, 2);
         disconnect(cd, 2);
     }
+#endif
 return 0;
 }
 
