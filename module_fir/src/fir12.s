@@ -64,13 +64,14 @@ skip:
 	lss r6, r4, r3
 	bt r6, loop
 
+	ldw r5, sp[1]
+	ldw r4, sp[2]
+    mov r1, r10
 	ldw r10, sp[3]
 	ldw r8, sp[5]
     mov r0, r11
 	ldw r7, sp[6]
 	ldw r6, sp[4]
-	ldw r5, sp[1]
-	ldw r4, sp[2]
 	retsp 7
 	.cc_bottom fir12.function
 	.set	fir12.nstackwords,7

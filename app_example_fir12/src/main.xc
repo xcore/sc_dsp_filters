@@ -8,7 +8,8 @@ int main(void) {
     int coeffs[N];
     int data[N+FIR_MODULO];
     timer tt;
-    int x, y, z, w, s = 0, t = 0;
+    int x, y, w, s = 0, t = 0;
+    long long z;
 
     // Make up some coefficients
     for(int i = 0; i < N; i++) {
@@ -29,7 +30,7 @@ int main(void) {
         tt :> x;
         z = fir12(coeffs, data, w, N);
         tt :> y;
-        printf("%d  %d: %d\n", s+j*t-z, y-x, z);
+        printf("%lld  %d: %lld\n", s+j*t-z, y-x, z);
         data[w] = j+N;
         if (w < FIR_MODULO) {
             data[w+N] = j+N;
