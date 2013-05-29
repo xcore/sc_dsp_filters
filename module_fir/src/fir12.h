@@ -19,4 +19,6 @@
  *
  * \returns            The 64 bit FIR. Headroom should be kept in coefficients or data to prevent overflow.
  */
-long long fir12(int coefficients[], int data[], int offset, int N);
+long long fir12(const int coefficients[], int data[], int offset, int N);
+
+long long fir12coffset(const int coefficients[], int data[], int offset, int N, int coffset);

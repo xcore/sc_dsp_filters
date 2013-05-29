@@ -1,8 +1,13 @@
 	.set fir12.locnochandec, 1
 	.text
 	.globl	fir12
+	.globl	fir12coffset
 	.cc_top fir12.function
 	.align	4
+    nop
+fir12coffset:
+    ldw r11, sp[1]
+    ldaw r0, r0[r11]
 fir12:
 	entsp 7
 	stw r4, sp[2]
@@ -84,5 +89,14 @@ skip:
 	.globl	fir12.maxchanends
 .fir12end:
 	.size	fir12, .fir12end-fir12
+	.set	fir12coffset.nstackwords,7
+	.globl	fir12coffset.nstackwords
+	.set	fir12coffset.maxcores,1
+	.globl	fir12coffset.maxcores
+	.set	fir12coffset.maxtimers,1
+	.globl	fir12coffset.maxtimers
+	.set	fir12coffset.maxchanends,0
+	.globl	fir12coffset.maxchanends
+	.size	fir12coffset, .fir12end-fir12coffset
 
 
