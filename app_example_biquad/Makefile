@@ -28,10 +28,8 @@ USED_MODULES = module_cascading_biquad
 # The following part of the Makefile includes the common build infrastructure
 # for compiling XMOS applications. You should not need to edit below here.
 
-
-# Use the main Makefile from module_xcommon
--include ../module_xcommon/build/Makefile.common
--include ../../xcommon/module_xcommon/build/Makefile.common
+XMOS_MAKE_PATH ?= ../..
+include $(XMOS_MAKE_PATH)/xcommon/module_xcommon/build/Makefile.common
 
 # The final target of the build. This is usually dependent on a binary file
 # in the $(BIN_DIR) directory e.g.
@@ -46,9 +44,10 @@ coefficients:
 		FILTER='-min 8 -max 8 -step 1 -bits 28 -low 632 -high 632' \
 		INCLUDEFILE=src/coeffs.h \
 		XCFILE=src/coeffs.xc \
-		CSVFILE=bin/response.csv
+		CSVFILE=response.csv
 
 #		FILTER='-min -12 -max 12 -step 1 -bits 27 -low 15.625 -peaking 31.25 1 -peaking 62.5 1 -peaking 125 1 -peaking 250 1 -peaking 500 1 -peaking 1000 1 -peaking 2000 1 -peaking 4000 1 -high 8000' \
 
 clean: clean_common
-	rm MakeCoeffs.class MakeCoeffs?F.class
+	rm -f MakeCoeffs.class MakeCoeffs?F.class response.csv
+
