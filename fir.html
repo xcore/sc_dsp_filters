@@ -1,4 +1,3 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -11,7 +10,7 @@
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
+        URL_ROOT:    './',
         VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -129,9 +128,9 @@ windowing. If the error is high, you can try and increase the number of
 taps. Note that low cut-off frequencies (relative to the sample frequency)
 require a high number of taps.</p>
 </div>
-<div class="section" id="calling-fir">
-<h2>Calling FIR<a class="headerlink" href="#calling-fir" title="Permalink to this headline">¶</a></h2>
-<p>The function that performs the run time fir is in module_fir. Inlcude the
+<div class="section" id="calling-simple-fir">
+<h2>Calling simple FIR<a class="headerlink" href="#calling-simple-fir" title="Permalink to this headline">¶</a></h2>
+<p>The function that performs the run time fir is in module_fir. Include the
 file fir.h and call:</p>
 <div class="highlight-none"><div class="highlight"><pre>filteredSample = fir(sampleValue, coefficientTable, stateTable, N)
 </pre></div>
@@ -142,6 +141,49 @@ was produced by the code above, stateTable should be an array of N integers
 which is initialised to all zeroes prior to the first call to fir, and N is
 the number of taps (the -n parameter above). The stateTable will contain
 N old samples.</p>
+</div>
+<div class="section" id="calling-optimised-fir">
+<h2>Calling optimised FIR<a class="headerlink" href="#calling-optimised-fir" title="Permalink to this headline">¶</a></h2>
+<p>The optimised fir also resides in module_fir. There are 5 ways to call this
+function: running the code inside the current thread, or running it in 1,
+2, 3, or 4 separate threads (on the same core so to share the coefficients
+table).</p>
+<div class="section" id="in-1-to-4-extra-threads">
+<h3>In 1 to 4 extra threads<a class="headerlink" href="#in-1-to-4-extra-threads" title="Permalink to this headline">¶</a></h3>
+<p>Create your coefficient table (N elements), and create four temporary arrays (N/4+12
+elements each); N must be a multiple of 48. Now create a process as
+follows:</p>
+<div class="highlight-none"><div class="highlight"><pre>par {
+   ...
+   fir_par4_48(coeffs, N, cin, data0, data1, data2, data3);
+   ...
+}
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">cin</span></tt> should be a streaming channel. Each sample to be filtered should be
+output onto this channel as a signed integer. Once a sample has been
+output, the filtered value should be input on the channel as a <tt class="docutils literal"><span class="pre">long</span>
+<span class="pre">long</span></tt>; which is the 64 bit result.</p>
+<p>In order to use three threads, call the function <tt class="docutils literal"><span class="pre">fir_par3_36</span></tt> and pass
+one array less; make sure that all arrays have at least N/3+12 elements.</p>
+<p>In order to use two threads, call the function <tt class="docutils literal"><span class="pre">fir_par2_24</span></tt> and pass
+two temporary arrays only; make sure that they have at least N/2+12 elements.</p>
+<p>In order to use one thread, call the function <tt class="docutils literal"><span class="pre">fir_par1_12</span></tt> and pass
+one temporary array only which must have N+12 elements.</p>
+</div>
+<div class="section" id="inside-the-current-thread">
+<h3>Inside the current thread<a class="headerlink" href="#inside-the-current-thread" title="Permalink to this headline">¶</a></h3>
+<p>Call the function:</p>
+<div class="highlight-none"><div class="highlight"><pre>fir12(coefficients, data, w, N);
+</pre></div>
+</div>
+<p>With your coefficients, the data, N elements, and an index w indicating the
+index of the most recent sample in the data array. data[w] should be the
+most recent sample, data[w+1] should be the previous sample, etc. Note that
+data should be N+12 samples long, and that data[0..11] should be replicated
+in data[N..N+11]. See the code in fir_par1_12 for an example how to drive
+it.</p>
+</div>
 </div>
 </div>
 
@@ -158,7 +200,12 @@ N old samples.</p>
 <li class="toctree-l1"><a class="reference internal" href="biquad.html">module_cascading_biquad</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Using FIR filters</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#computing-fir-coefficients">Computing FIR coefficients</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#calling-fir">Calling FIR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#calling-simple-fir">Calling simple FIR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#calling-optimised-fir">Calling optimised FIR</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#in-1-to-4-extra-threads">In 1 to 4 extra threads</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#inside-the-current-thread">Inside the current thread</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="asrc.html">module_asrc</a></li>

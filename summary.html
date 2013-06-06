@@ -1,4 +1,3 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -11,7 +10,7 @@
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
+        URL_ROOT:    './',
         VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -182,9 +181,14 @@ but lead to interesting phase shifts.</p>
 <h2>module_fir<a class="headerlink" href="#module-fir" title="Permalink to this headline">¶</a></h2>
 <p>The FIR module implements a function that performs a single FIR. If
 multiple FIRs are to be applied, the coefficients can be summed at compile
-time. Its performance solely depends on the number of taps and the number
-of channels (note - this is not an optimised version) (Note: these numbers
-are approximate:</p>
+time. Its performance depends on the number of taps and the number of
+logical cores that are deployed. There are two versions of the FIR: one is
+simple, not efficient, but works on any lenght filter; the other is highly
+optimised but it requires the filter length to be a mulitple of 12. The
+numbers are below are for a single channel - multiple channels scale
+linearly. All times are measured on an empty 400 MHz processor, ie, this
+assumes there are 1, 2, 3, or 4 threads that have 100 MIPS each.</p>
+<p>General and simple version:</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="14%" />
@@ -199,7 +203,7 @@ are approximate:</p>
 <td colspan="3">Resources required</td>
 <td rowspan="2">Status</td>
 </tr>
-<tr class="row-even"><td>Channels</td>
+<tr class="row-even"><td>Threads</td>
 <td>Taps</td>
 <td>Thread cycles</td>
 <td>Max rate</td>
@@ -212,29 +216,89 @@ are approximate:</p>
 <td>? KB</td>
 <td>Implemented, TBC</td>
 </tr>
-<tr class="row-even"><td>2</td>
-<td>1</td>
-<td>86</td>
-<td>581 KHz</td>
-<td>? KB</td>
-<td>Implemented, TBC</td>
-</tr>
-<tr class="row-odd"><td>1</td>
+<tr class="row-even"><td>1</td>
 <td>2</td>
 <td>43</td>
 <td>943 KHz</td>
 <td>? KB</td>
 <td>Implemented, TBC</td>
 </tr>
-<tr class="row-even"><td>M</td>
+<tr class="row-odd"><td>1</td>
 <td>N</td>
-<td>M (33+10 N)</td>
+<td>(33+10 N)</td>
 <td>50/...</td>
 <td>? KB</td>
 <td>Implemented, TBC</td>
 </tr>
 </tbody>
 </table>
+<p>Efficient version, requires number of taps to be a multiple of 12:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="18%" />
+<col width="18%" />
+<col width="12%" />
+<col width="14%" />
+<col width="25%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td colspan="2">Functionality provided</td>
+<td colspan="3">Resources required</td>
+<td rowspan="2">Status</td>
+</tr>
+<tr class="row-even"><td>Threads</td>
+<td>Taps</td>
+<td>Time in ns</td>
+<td>Max rate</td>
+<td>Memory</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>48</td>
+<td>2760</td>
+<td>362 KHz</td>
+<td>? KB</td>
+<td>Implemented, TBC</td>
+</tr>
+<tr class="row-even"><td>4</td>
+<td>48</td>
+<td>1160</td>
+<td>862 KHz</td>
+<td>? KB</td>
+<td>Implemented, TBC</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>288</td>
+<td>13950</td>
+<td>71 KHz</td>
+<td>? KB</td>
+<td>Implemented, TBC</td>
+</tr>
+<tr class="row-even"><td>4</td>
+<td>288</td>
+<td>3940</td>
+<td>253 KHz</td>
+<td>? KB</td>
+<td>Implemented, TBC</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>large N</td>
+<td>46.625 N</td>
+<td>21/N MHz</td>
+<td>? KB</td>
+<td>Implemented, TBC</td>
+</tr>
+<tr class="row-even"><td>4</td>
+<td>large N</td>
+<td>11.583 N</td>
+<td>86/N MHz</td>
+<td>? KB</td>
+<td>Implemented, TBC</td>
+</tr>
+</tbody>
+</table>
+<p>(Note: it may be possible to cleverly jump into the loop and get an
+efficient version that enables any number of coefficients, this is To Do)</p>
 </div>
 <div class="section" id="module-asrc">
 <h2>module_asrc<a class="headerlink" href="#module-asrc" title="Permalink to this headline">¶</a></h2>

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -11,7 +10,7 @@
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
+        URL_ROOT:    './',
         VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -125,21 +124,31 @@ struct oneBank <tt class="descname">b</tt><a class="headerlink" href="#biquadSta
 <dl class="member">
 <dt id="biquadState.adjustDelay">
 int <tt class="descname">adjustDelay</tt><a class="headerlink" href="#biquadState.adjustDelay" title="Permalink to this definition">¶</a></dt>
-<dd><p>variable that holds the amount of time until the next time that the db values are to be adjusted.</p>
+<dd><blockquote>
+<div><dl class="docutils">
+<dt>until the next time that the db values are to be adjusted.  ::</dt>
+<dd>variable that holds the amount of time</dd>
+</dl>
+</div></blockquote>
 <p>Internal use only.</p>
 </dd></dl>
 
 <dl class="member">
 <dt id="biquadState.adjustCounter">
 int <tt class="descname">adjustCounter</tt><a class="headerlink" href="#biquadState.adjustCounter" title="Permalink to this definition">¶</a></dt>
-<dd><p>variable that holds the index of the filter bank to be adjusted next.</p>
+<dd><blockquote>
+<div><dl class="docutils">
+<dt>filter bank to be adjusted next.  ::</dt>
+<dd>variable that holds the index of the</dd>
+</dl>
+</div></blockquote>
 <p>Internal use only.</p>
 </dd></dl>
 
 <dl class="member">
 <dt id="biquadState.desiredDb">
 int <tt class="descname">desiredDb</tt><a class="headerlink" href="#biquadState.desiredDb" title="Permalink to this definition">¶</a></dt>
-<dd><p>variable that holds the <em>desired</em> dB value for each bank in the filter.</p>
+<dd><p>variable that holds the  dB value for each bank in the filter.</p>
 <p>This array can be modified at any time, but changes will only take effect slowly in order to prevent the filter from becoming instable.</p>
 </dd></dl>
 
@@ -149,7 +158,7 @@ int <tt class="descname">desiredDb</tt><a class="headerlink" href="#biquadState.
 <dt id="coeff">
 <tt class="descname">coeff</tt><a class="headerlink" href="#coeff" title="Permalink to this definition">¶</a></dt>
 <dd><p>This structure holds the coefficient values for one particular filter configuration ,for example the filter settings for a 400 Hz low-shelf filter at -10 dB.</p>
-<p>The values stored are fixed point values (as defined by <em>FRACTIONALBITS</em>) and are all normalised against the value of <tt class="docutils literal"><span class="pre">a0</span></tt>. The five values represent the normal values for a biquad filter (see for example the DSP cookbook), ie, b0 is multiplied by the current sample value and should have been pre-divided by a0.</p>
+<p>The values stored are fixed point values (as defined by ) and are all normalised against the value of . The five values represent the normal values for a biquad filter (see for example the DSP cookbook), ie, b0 is multiplied by the current sample value and should have been pre-divided by a0.</p>
 <p><strong>Structure Members:</strong></p>
 <dl class="member">
 <dt id="coeff.b0">

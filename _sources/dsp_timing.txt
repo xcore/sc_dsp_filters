@@ -50,11 +50,11 @@ filter - edit the "coefficients" section of the Makefile and change
 the FILTER section to::
 
   coefficients:
-       make -f ../build_biquad_coefficients/Makefile \
+       make -f ../build_biquad_coefficients/Makefile.mk \
 		FILTER='-min -20 -max 20 -step 1 -bits 27 -low 250 ' \
         INCLUDEFILE=src/coeffs.h \
 		XCFILE=src/coeffs.xc \
-		CSVFILE=bin/response.csv
+		CSVFILE=response.csv
 
 The main application file in app_example_biquad/src/main.xc will need
 to be edited for the case of a single filter to comment out line 128::
@@ -96,13 +96,13 @@ If the Makefile is now edited to increase the number of filters, we
 can retime the binary::
 
    coefficients:
-       make -f ../build_biquad_coefficients/Makefile \
+       make -f ../build_biquad_coefficients/Makefile.mk \
 		FILTER='-min -20 -max 20 -step 1 -bits 27 -low 100 -high 2000
 		-peaking 200 1 -peaking 250 1 -peaking 325 1 -peaking 440 1 -peaking
 		600 1 -peaking 1000 1 -peaking 1500 1' \
 		INCLUDEFILE=src/coeffs.h \
 		XCFILE=src/coeffs.xc \
-		CSVFILE=bin/response.csv
+		CSVFILE=response.csv
 
 (For the purposes of this exercise we're not so concerned with the
 output frequency response, just seeing how many filters can be
@@ -132,7 +132,7 @@ Given that new information, let's try 20 filters and see if we can
 still meeet timing. Edit the makefile::
 
   coefficients:
-	  make -f ../build_biquad_coefficients/Makefile \
+	  make -f ../build_biquad_coefficients/Makefile.mk \
 		FILTER='-min -20 -max 20 -step 1 -bits 27 -low 100 \
        -high 4000 -peaking 150 1 -peaking 200 1 -peaking 250 1 \
        -peaking 325 1 -peaking 500 1 -peaking 700 1 -peaking 1000 1 \

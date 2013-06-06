@@ -96,24 +96,50 @@ module_fir
 
 The FIR module implements a function that performs a single FIR. If
 multiple FIRs are to be applied, the coefficients can be summed at compile
-time. Its performance solely depends on the number of taps and the number
-of channels (note - this is not an optimised version) (Note: these numbers
-are approximate:
+time. Its performance depends on the number of taps and the number of
+logical cores that are deployed. There are two versions of the FIR: one is
+simple, not efficient, but works on any lenght filter; the other is highly
+optimised but it requires the filter length to be a mulitple of 12. The
+numbers are below are for a single channel - multiple channels scale
+linearly. All times are measured on an empty 400 MHz processor, ie, this
+assumes there are 1, 2, 3, or 4 threads that have 100 MIPS each.
+
+General and simple version:
 
 +------------------------+----------------------------------+------------------+
 | Functionality provided | Resources required               | Status           |
 +----------+-------------+-------------+---------+----------+                  |
-| Channels | Taps        |Thread cycles|Max rate | Memory   |                  |
+| Threads  | Taps        |Thread cycles|Max rate | Memory   |                  |
 +----------+-------------+-------------+---------+----------+------------------+
 | 1        | 1           | 43          | 1.1 MHz | ? KB     | Implemented, TBC |
 +----------+-------------+-------------+---------+----------+------------------+
-| 2        | 1           | 86          | 581 KHz | ? KB     | Implemented, TBC |
-+----------+-------------+-------------+---------+----------+------------------+
 | 1        | 2           | 43          | 943 KHz | ? KB     | Implemented, TBC |
 +----------+-------------+-------------+---------+----------+------------------+
-| M        | N           | M (33+10 N) | 50/...  | ? KB     | Implemented, TBC |
+| 1        | N           | (33+10 N)   | 50/...  | ? KB     | Implemented, TBC |
 +----------+-------------+-------------+---------+----------+------------------+
 
+Efficient version, requires number of taps to be a multiple of 12:
+
++------------------------+----------------------------------+------------------+
+| Functionality provided | Resources required               | Status           |
++----------+-------------+-------------+---------+----------+                  |
+| Threads  | Taps        | Time in ns  |Max rate | Memory   |                  |
++----------+-------------+-------------+---------+----------+------------------+
+| 1        | 48          | 2760        | 362 KHz | ? KB     | Implemented, TBC |
++----------+-------------+-------------+---------+----------+------------------+
+| 4        | 48          | 1160        | 862 KHz | ? KB     | Implemented, TBC |
++----------+-------------+-------------+---------+----------+------------------+
+| 1        | 288         | 13950       | 71 KHz  | ? KB     | Implemented, TBC |
++----------+-------------+-------------+---------+----------+------------------+
+| 4        | 288         | 3940        | 253 KHz | ? KB     | Implemented, TBC |
++----------+-------------+-------------+---------+----------+------------------+
+| 1        | large N     | 46.625 N    | 21/N MHz| ? KB     | Implemented, TBC |
++----------+-------------+-------------+---------+----------+------------------+
+| 4        | large N     | 11.583 N    | 86/N MHz| ? KB     | Implemented, TBC |
++----------+-------------+-------------+---------+----------+------------------+
+
+(Note: it may be possible to cleverly jump into the loop and get an
+efficient version that enables any number of coefficients, this is To Do)
 
 module_asrc
 -----------
