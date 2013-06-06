@@ -76,10 +76,10 @@ int main(void) {
         coeffs2[i] = coeff;
     }
     par {
-//        fir_par4_48(coeffs, N, cin, data0, data1, data2, data3);
+        fir_par4_48(coeffs, N, cin, data0, data1, data2, data3);
 //        fir_par3_36(coeffs, N, cin, data0, data1, data2);
 //        fir_par2_24(coeffs, N, cin, data0, data1);
-        fir_par1_12(coeffs, N, cin, data0);
+//        fir_par1_12(coeffs, N, cin, data0);
         produce(cin, verif);
         localFir(coeffs2, verif);
     }

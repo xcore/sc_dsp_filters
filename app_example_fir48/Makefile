@@ -14,4 +14,3 @@ USED_MODULES = module_fir
 
 
 clean: clean_common
-	rm MakeFIR.class
