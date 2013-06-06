@@ -22,7 +22,7 @@ all: coefficients $(BIN_DIR)/$(APP_NAME).xe
 	@echo Build Complete
 
 coefficients:
-	make -f ../../sc_dsp_filters/build_fir_coefficients/Makefile \
+	make -f ../../sc_dsp_filters/build_fir_coefficients/Makefile.mk \
 		FILTER='-low 250 -high 2500  -n 281 -hamming -xc src/coeffs.xc -csv response.csv'
 
 clean: clean_common

@@ -40,7 +40,7 @@ all: coefficients $(BIN_DIR)/$(APP_NAME).xe
 	@echo Build Complete
 
 coefficients:
-	make -f ../../sc_dsp_filters/build_biquad_coefficients/Makefile \
+	make -f ../../sc_dsp_filters/build_biquad_coefficients/Makefile.mk \
 		FILTER='-min 8 -max 8 -step 1 -bits 28 -low 632 -high 632' \
 		INCLUDEFILE=src/coeffs.h \
 		XCFILE=src/coeffs.xc \
