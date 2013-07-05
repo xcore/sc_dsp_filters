@@ -1,0 +1,13 @@
+This is a module with some stating points for a DSD to PCM conversion.
+It requires a tableproduced by the FIR builder to create a low pass
+filter, something like:
+
+java -jar build_fir_coefficients/lib/makefir.jar -one 2147483647 -low 22050 -fs 2822400 -n 1025 -kaiser 110 
+
+or
+
+java -jar build_fir_coefficients/lib/makefir.jar -one 2147483647 -low 22050 -fs 2822400 -n 1537 -kaiser 110 
+
+Or one that uses half the table size as it fits in shorts:
+
+java -jar build_fir_coefficients/lib/makefir.jar -one 500000 -low 22050 -fs 2822400 -n 1537 -kaiser 110 
