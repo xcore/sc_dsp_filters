@@ -14,6 +14,7 @@ class MakeFIR {
     final int HAMMING = 2;
     final int GAUSSIAN = 3;
     final int BLACKMAN = 4;
+    final int KAISER = 5;
 
 // Window function from http://en.wikipedia.org/wiki/Window_function
     
@@ -21,8 +22,37 @@ class MakeFIR {
         return x*x;
     }
 
+    double Ino(double x) {
+        int d = 0;
+        double ds = 1, s = 1;
+        do {
+            d += 2;
+            ds *= x*x/(d*d);
+            s += ds;
+        } while (ds > s * 1e-6);
+        return s;
+    }
+
+    double Att;
+
+    double kaiser(int n, int N) {
+        double alpha;
+        if (Att < 21) {
+            alpha = 0;
+        } else if (Att > 50) {
+            alpha = 0.1102 * (Att -8.7);
+        } else {
+            alpha = 0.5842 * Math.pow((Att-21), 0.4) + 0.07886*(Att-21);
+        }
+        double Inoalpha = Ino(alpha);
+        double root = Math.sqrt(1-(n*n/((double)N*N)));
+        double ret = Ino(alpha * root)/Inoalpha;
+        return ret;
+    }
+
     double windowValue(int w, int n, int N) {
         switch(w) {
+        case KAISER:  if (n < N/2) return kaiser(N/2-n, N/2); else return kaiser(n-N/2, N/2);
         case HANN:    return 0.5 * (1 - Math.cos(2 * n * pi / (N-1.0)));
         case HAMMING: return 0.54 - 0.46 * Math.cos(2 * n * pi / (N-1.0));
         case GAUSSIAN: {
@@ -101,10 +131,12 @@ class MakeFIR {
                 " -gaussian            Gaussian window\n" +
                 " -blackman            Blackman window\n" +
                 " -hamming             Hamming window (default)\n" +
-                " -hann                Hann window\n\n" +
+                " -hann                Hann window\n" +
+                " -kaiser attenuation  Kaiser window with given attenuation\n\n" +
                 " -n taps              Number of taps - should be odd\n" +
                 " -fs freq             Sample frequency, default 48000\n" +
                 " -one N               Integer value representing 1.0, default 1<<24\n\n" +
+                " -dds ddsFileName     produce a dds conversion table\n" +
                 " -xc sourceFileName   name of source file, default coeffs.xc\n" +
                 " -csv csvFileName     name of csv file, default response.csv\n\n" +
                 "One of -low, -high, -bp, or -bs must be specified\n" +
@@ -131,6 +163,7 @@ class MakeFIR {
     MakeFIR(String[] args) {
         int i;
         double fs = 48000;
+        String ddsFile = null;
         String sourceFile = "coeffs.xc";
         String responseCurve = "response.csv";
         double [] c = null, e = null;
@@ -140,7 +173,7 @@ class MakeFIR {
         int N = 0;
         double sum = 0;
         double tsum = 0;
-        PrintStream fdXC, fdCSV;
+        PrintStream fdXC, fdCSV, fdDDS = null;
         
         for(i = 0; i<args.length; i++) {
             if (args[i].equals("-low")) {
@@ -161,6 +194,9 @@ class MakeFIR {
                 win = HANN;
             } else if (args[i].equals("-blackman")) {
                 win = BLACKMAN;
+            } else if (args[i].equals("-kaiser")) {
+                win = KAISER;
+                Att = Double.parseDouble(args[++i]);
             } else if (args[i].equals("-n")) {
                 N = Integer.parseInt(args[++i]);
                 c = new double[N];
@@ -171,6 +207,8 @@ class MakeFIR {
                 }
             } else if (args[i].equals("-xc")) {
                 sourceFile = args[++i];
+            } else if (args[i].equals("-dds")) {
+                ddsFile = args[++i];
             } else if (args[i].equals("-csv")) {
                 responseCurve = args[++i];
             } else if (args[i].equals("-one")) {
@@ -187,7 +225,10 @@ class MakeFIR {
         }
         fdXC = fopen_save(sourceFile);
         fdCSV = fopen_save(responseCurve);
-        
+        if (ddsFile != null) {
+            fdDDS = fopen_save(ddsFile);
+        }
+
         double freq = 0, freqh = 0;
         
         for(int k = 0; k<args.length; k++) {
@@ -262,11 +303,38 @@ class MakeFIR {
         }
         fdXC.print( "};\n");
 
+
+        if (fdDDS != null) {
+            fdDDS.print("//Generated code - do not edit.\n\n" +
+                       "int coeff[" + (N-1)/4*16 + "] = {\n");
+            for( i = 0; i < N-1; i+=4) {
+                for(int j = 0; j < 16; j++) {
+                    sum = 0;
+                    String dds = "";
+                    for(int k = 1, o = 0; k < 16; k *= 2, o++) {
+                        if ((j&k) == 0) {
+                            sum -= c[i+o];
+                            dds += "-";
+                        } else {
+                            sum += c[i+o];
+                            dds += "+";
+                        }
+                    }
+                    fdDDS.print( " " + ((int) Math.floor(sum * scale + 0.5)) + ", // "+ sum +" : " + dds + " " + i + "\n"); 
+                }
+                fdDDS.print("\n");
+            }
+            for(int j = 0; j < 16; j++) {
+                fdDDS.print( " 0,\n");
+            }
+            fdDDS.print("};\n");
+        }
+
+
 // freq response, from http://www.dspguru.com/dsp/faqs/fir/properties
         
         double omega;
         double factor = Math.sqrt(Math.sqrt(Math.sqrt(Math.sqrt(Math.sqrt(2.0)))));
-        fdCSV.print("Frequency,Magnitude,dB\n");
         for(omega = 50; omega < fs/2; omega = omega * factor) {
             double sumr = 0;
             double sumi = 0;
@@ -279,7 +347,7 @@ class MakeFIR {
                 sumi += roundedci * Math.sin(i*o);
             }
             mag = Math.sqrt(sumi*sumi + sumr*sumr);
-            fdCSV.print(omega + "," + mag + "," + (20*Math.log10(mag)) + "\n");
+            fdCSV.print(omega + " " + mag + " " + (20*Math.log10(mag)) + "\n");
         }
     }
 }
