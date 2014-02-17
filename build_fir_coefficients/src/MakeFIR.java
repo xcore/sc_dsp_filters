@@ -305,13 +305,14 @@ class MakeFIR {
 
 
         if (fdDDS != null) {
-            fdDDS.print("//Generated code - do not edit.\n\n" +
-                       "int coeff[" + (N-1)/4*16 + "] = {\n");
-            for( i = 0; i < N-1; i+=4) {
+            fdDDS.print("//Generated code - do not edit. Implicit zero before the table.\n\n");
+            fdDDS.print("int coeff_compressed[" + ((N-1)/4*16) + "] = {\n");
+            double largest = 0;
+            for( i = 1; i < N; i+=4) {
                 for(int j = 0; j < 16; j++) {
                     sum = 0;
                     String dds = "";
-                    for(int k = 1, o = 0; k < 16; k *= 2, o++) {
+                    for(int k = 8, o = 0; k > 0; k >>= 1, o++) {
                         if ((j&k) == 0) {
                             sum -= c[i+o];
                             dds += "-";
@@ -320,13 +321,35 @@ class MakeFIR {
                             dds += "+";
                         }
                     }
-                    fdDDS.print( " " + ((int) Math.floor(sum * scale + 0.5)) + ", // "+ sum +" : " + dds + " " + i + "\n"); 
+                    fdDDS.print( " " + ((int) Math.floor(sum * scale + 0.5)) + ", // "+ sum +" : " + dds + " " + i + "\n");
+                    if (sum > largest) {
+                        largest = sum;
+                    }
                 }
                 fdDDS.print("\n");
             }
-            for(int j = 0; j < 16; j++) {
-                fdDDS.print( " 0,\n");
+            fdDDS.print("};\n\n");
+            int scale_16 = (int) Math.floor(largest * scale / 32767.0 + 1.0);
+            fdDDS.print("#define COEFF_COMPRESSION_16 " + scale_16 + "\n\n");
+            fdDDS.print("short coeff_compressed_16[" + ((N-1)/4*16) + "] = {\n");
+            for( i = 1; i < N; i+=4) {
+                for(int j = 0; j < 16; j++) {
+                    sum = 0;
+                    String dds = "";
+                    for(int k = 8, o = 0; k > 0; k >>= 1, o++) {
+                        if ((j&k) == 0) {
+                            sum -= c[i+o];
+                            dds += "-";
+                        } else {
+                            sum += c[i+o];
+                            dds += "+";
+                        }
+                    }
+                    fdDDS.print( " " + ((int) Math.floor(sum * scale / scale_16 + 0.5)) + ", // "+ sum +" : " + dds + " " + i + "\n"); 
+                }
+                fdDDS.print("\n");
             }
+            
             fdDDS.print("};\n");
         }
 
